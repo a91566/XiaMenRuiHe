@@ -1,0 +1,5 @@
+inherited FOF_qiangongchengyongliao: TFOF_qiangongchengyongliao
+  Caption = #21069#24037#31243#29992#26009
+  PixelsPerInch = 96
+  TextHeight = 16
+end

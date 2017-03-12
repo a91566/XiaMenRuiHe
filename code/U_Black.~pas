@@ -1,0 +1,43 @@
+unit U_Black;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs;
+
+type
+  TF_Black = class(TForm)
+    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  F_Black: TF_Black;
+
+implementation
+
+{$R *.dfm}
+
+procedure TF_Black.FormCreate(Sender: TObject);
+var
+  ExSty: DWORD;
+begin
+  SetWindowLong(Self.Handle, GWL_EXSTYLE, WS_EX_TOOLWINDOW); //不在任务栏显示
+  ExSty := GetWindowLong(Handle, GWL_EXSTYLE);
+  ExSty := ExSty or WS_EX_TRANSPARENT or WS_EX_LAYERED;
+  SetWindowLong(Handle, GWL_EXSTYLE, ExSty);
+  SetLayeredWindowAttributes(Handle, cardinal(clBtnFace), 125, LWA_ALPHA);
+  MoveWindow(Handle, 0, 0, Screen.Width, Screen.Height, True);
+end;
+
+procedure TF_Black.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action:=caFree;
+end;
+
+end.

@@ -1,0 +1,99 @@
+{ -------------------------
+此窗体用于继承
+控件、事件都会被继承
+不做其他操作
+---------------------------}
+
+unit U_ObjectForm;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Buttons, ExtCtrls, StdCtrls;
+
+type
+  TF_ObjectForm = class(TForm)
+    Panel1: TPanel;
+    SpeedButton999: TSpeedButton;
+    SpeedButton1: TSpeedButton;
+    SpeedButton2: TSpeedButton;
+    SpeedButton3: TSpeedButton;
+    SpeedButton4: TSpeedButton;
+    Panel2: TPanel;
+    Panel3: TPanel;
+    Timer1: TTimer;
+    Timer2: TTimer;
+  //  constructor Create(AOwner: TComponent; OwnerForm: TForm);
+    procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure SpeedButton999Click(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+  private  
+    // FOwnerForm : TForm;
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  F_ObjectForm: TF_ObjectForm;
+
+implementation
+
+uses U_main,  ZsbDLL, ZsbFunPro, ZsbVariable, UDM;
+
+{$R *.dfm}
+{
+constructor TF_ObjectForm.Create(AOwner: TComponent; OwnerForm: TForm);
+begin
+  inherited Create(Aowner);
+  FOwnerForm:= OwnerForm;
+end;    }
+
+procedure TF_ObjectForm.FormShow(Sender: TObject);
+begin
+  AnimateWindow(Handle, 500, AW_CENTER); //窗口由小变大
+end;
+
+procedure TF_ObjectForm.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin 
+  AnimateWindow(Self.Handle, 300, AW_CENTER+ AW_HIDE); // 变小 退出
+end;
+
+procedure TF_ObjectForm.SpeedButton999Click(Sender: TObject);
+begin
+  try
+    Panel1.Visible:=False;
+    Panel2.Visible:=False;
+    Panel3.Visible:=False;
+    F_main.TimClosePage.Enabled:=True; //激活关闭程序
+    F_main.iPuActivPage:=F_main.RzPageControl1.ActivePageIndex;
+    Self.Close;
+  except
+    on e:Exception do
+    begin
+      zsbSimpleMSNPopUpShow('Exception:'+e.Message);
+    end;
+  end;
+end;
+
+procedure TF_ObjectForm.Timer1Timer(Sender: TObject);
+var
+  h: THandle;
+begin
+  Timer1.Enabled:=False; // 因为窗体采用了动画效果，用此能恢复窗体控件原样
+  Panel1.Visible:=True; 
+  Panel2.Visible:=True;
+  Panel3.Visible:=True;
+
+  if FileExists(ExtractFilePath(Application.Exename) + 'BitBtnImageFormZsbDll.dll') then
+  begin
+    h := LoadLibrary('BitBtnImageFormZsbDll.dll'); //载入 DLL
+    SpeedButton999.Glyph.LoadFromResourceName(h, 'imgBDel');
+    FreeLibrary(h); //载卸 DLL
+  end;
+end;
+
+end.

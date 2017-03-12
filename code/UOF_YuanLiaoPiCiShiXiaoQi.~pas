@@ -1,0 +1,203 @@
+unit UOF_YuanLiaoPiCiShiXiaoQi;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, U_ObjectForm, ExtCtrls, Buttons, DB, DBClient, Grids, DBGridEh,
+  RzTabs, StdCtrls, ComCtrls;
+
+type
+  TFOF_YuanLiaoPiCiShiXiaoQi = class(TF_ObjectForm)
+    LabeledEdit1: TLabeledEdit;
+    RzPageControl2: TRzPageControl;
+    RzTabSheet2: TRzTabSheet;
+    DBGridEh2: TDBGridEh;
+    ClientDataSet1: TClientDataSet;
+    DataSource1: TDataSource;
+    Button1: TButton;
+    Panel4: TPanel;
+    LabeledEdit4: TLabeledEdit;
+    LabeledEdit5: TLabeledEdit;
+    Label3: TLabel;
+    DateTimePicker1: TDateTimePicker;
+    ClientDataSet10: TClientDataSet;
+    Button2: TButton;
+    Button3: TButton;
+    LabeledEdit2: TLabeledEdit;
+    CheckBox1: TCheckBox;
+    DateTimePicker2: TDateTimePicker;
+    CheckBox2: TCheckBox;
+    CheckBox3: TCheckBox;
+    CheckBox4: TCheckBox;
+    procedure Button1Click(Sender: TObject);
+    procedure LabeledEdit1KeyPress(Sender: TObject; var Key: Char);
+    procedure SpeedButton1Click(Sender: TObject);
+    procedure SpeedButton2Click(Sender: TObject);
+    procedure SpeedButton3Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure DBGridEh2DblClick(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FOF_YuanLiaoPiCiShiXiaoQi: TFOF_YuanLiaoPiCiShiXiaoQi;
+
+implementation
+
+uses ZsbFunPro, ZsbDLL, U_main;
+
+{$R *.dfm}
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.Button1Click(Sender: TObject);
+var
+  strsql: string;
+begin
+  inherited;
+  strsql := 'select * from matlInDepotMX where StockQuat>0';
+  if LabeledEdit1.Text <> '' then
+  begin
+    strsql := strsql + ' and MatlCode like ''' + LabeledEdit1.Text + '%''';
+  end;
+  if LabeledEdit2.Text <> '' then
+  begin
+    strsql := strsql + ' and MatlLot like ''' + LabeledEdit2.Text + '%''';
+  end;
+  if CheckBox1.Checked then
+  begin
+    strsql := strsql + ' and LostUsesDate<=''' + FormatDateTime('yyyy-MM-dd', DateTimePicker2.Date) + '''';
+  end;
+  SelectClientDataSet(ClientDataSet1, strsql);
+end;
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.LabeledEdit1KeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  inherited;
+  if Key = #13 then
+  begin
+    Button1.Click;
+  end;
+end;
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.SpeedButton1Click(Sender: TObject);
+begin
+  inherited;
+  DateTimePicker1.Date := Now;
+  Button1.Click;
+end;
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.SpeedButton2Click(Sender: TObject);
+begin
+  inherited;
+  DateTimePicker2.Date := Now + 2;
+  Button1.Click;
+end;
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.SpeedButton3Click(Sender: TObject);
+begin
+  inherited;
+  DateTimePicker2.Date := Now + 7;
+  Button1.Click;
+end;
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.FormShow(Sender: TObject);
+begin
+  inherited;
+  DateTimePicker2.Date := Now;
+end;
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.Button2Click(Sender: TObject);
+var
+  exsql: string;
+begin
+  inherited;
+  if (CheckBox2.Checked = False) and (CheckBox3.Checked = False) then
+  begin
+    zsbSimpleMSNPopUpShow('没有更新条件！');
+    Exit;
+  end;
+  if (CheckBox2.Checked = True) and (CheckBox3.Checked = True) then
+  begin
+    exsql := ' and MatlCode=''' + LabeledEdit4.Text + ''' and MatlLot=''' + LabeledEdit5.Text + '''';
+  end
+  else if (CheckBox2.Checked = True) and (CheckBox3.Checked = False) then
+  begin
+    exsql := ' and MatlCode=''' + LabeledEdit4.Text + '''';
+  end
+  else if (CheckBox2.Checked = False) and (CheckBox3.Checked = True) then
+  begin
+    exsql := ' and MatlLot=''' + LabeledEdit5.Text + '''';
+  end;
+
+  if exsql = '' then
+  begin
+    zsbSimpleMSNPopUpShow('获取条件错误，请联系管理员！');
+    Exit;
+  end;
+  exsql := 'update MatlInDepotMx set LostUsesDate=''' + FormatDateTime('yyyy-MM-dd', DateTimePicker1.Date) +
+    ''' where LostUsesDate<''' + FormatDateTime('yyyy-MM-dd', DateTimePicker2.Date) + ''' and StockQuat>0' + exsql;
+ // ShowMessage(exsql);
+  //Exit;
+  if EXSQLClientDataSet(ClientDataSet10, exsql) then
+  begin
+    Panel4.Height := 60; 
+    Button3.Caption := '延长期效';
+    zsbSimpleMSNPopUpShow('操作成功！');
+    Button1.Click;
+  end
+  else
+  begin
+    ZsbMsgErrorInfoNoApp(F_main, '对不起，操作失败！');
+  end;
+end;
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.Button3Click(Sender: TObject);
+begin
+  inherited;
+  if Button3.Caption = '延长期效' then
+  begin
+    if ClientDataSet1.Data = null then
+    begin
+      zsbSimpleMSNPopUpShow('没有可操作的数据.');
+      Exit;
+    end;
+    if ClientDataSet1.RecordCount = 0 then
+    begin
+      zsbSimpleMSNPopUpShow('没有可操作的数据.');
+      Exit;
+    end;
+    LabeledEdit4.Text := ClientDataSet1.FieldByName('MatlCode').AsString;
+    LabeledEdit5.Text := ClientDataSet1.FieldByName('MatlLot').AsString;
+    DateTimePicker1.Date := Now + 30;
+    Panel4.Height := 300;
+    Button3.Caption := '取消';
+  end
+  else
+  begin     
+    Panel4.Height := 60;   
+    Button3.Caption := '延长期效';
+  end;
+end;
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.DBGridEh2DblClick(Sender: TObject);
+begin
+  inherited;
+  Button3.Click;
+end;
+
+procedure TFOF_YuanLiaoPiCiShiXiaoQi.Timer1Timer(Sender: TObject);
+begin
+  inherited;
+  Timer1.Enabled := False;
+  Panel2.Visible := True;
+end;
+
+end.
+

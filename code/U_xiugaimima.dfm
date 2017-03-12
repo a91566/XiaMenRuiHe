@@ -1,0 +1,110 @@
+object F_xiugaimima: TF_xiugaimima
+  Left = 580
+  Top = 197
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
+  Caption = #20462#25913#30331#24405#23494#30721
+  ClientHeight = 290
+  ClientWidth = 359
+  Color = clWhite
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -16
+  Font.Name = #23435#20307
+  Font.Style = []
+  OldCreateOrder = False
+  OnClose = FormClose
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 16
+  object Panel3: TPanel
+    Left = 0
+    Top = 0
+    Width = 359
+    Height = 290
+    Align = alClient
+    BevelInner = bvLowered
+    Color = clWhite
+    TabOrder = 0
+    Visible = False
+    object SpeedButton4: TSpeedButton
+      Left = 194
+      Top = 214
+      Width = 90
+      Height = 37
+      Caption = #36864#20986
+      OnClick = SpeedButton4Click
+    end
+    object SpeedButton3: TSpeedButton
+      Left = 75
+      Top = 214
+      Width = 90
+      Height = 37
+      Caption = #30830#23450
+      OnClick = SpeedButton3Click
+    end
+    object LabeledEdit4: TLabeledEdit
+      Left = 115
+      Top = 161
+      Width = 163
+      Height = 24
+      EditLabel.Width = 48
+      EditLabel.Height = 16
+      EditLabel.Caption = #26032#23494#30721
+      LabelPosition = lpLeft
+      PasswordChar = '*'
+      TabOrder = 2
+    end
+    object LabeledEdit3: TLabeledEdit
+      Left = 115
+      Top = 121
+      Width = 163
+      Height = 24
+      EditLabel.Width = 48
+      EditLabel.Height = 16
+      EditLabel.Caption = #26032#23494#30721
+      LabelPosition = lpLeft
+      PasswordChar = '*'
+      TabOrder = 1
+    end
+    object LabeledEdit2: TLabeledEdit
+      Left = 115
+      Top = 78
+      Width = 163
+      Height = 24
+      EditLabel.Width = 48
+      EditLabel.Height = 16
+      EditLabel.Caption = #21407#23494#30721
+      LabelPosition = lpLeft
+      PasswordChar = '*'
+      TabOrder = 0
+    end
+    object LabeledEdit1: TLabeledEdit
+      Left = 115
+      Top = 35
+      Width = 163
+      Height = 24
+      Color = 16776176
+      EditLabel.Width = 64
+      EditLabel.Height = 16
+      EditLabel.Caption = #29992#25143#36134#21495
+      LabelPosition = lpLeft
+      TabOrder = 3
+    end
+    object CheckBox1: TCheckBox
+      Left = 11
+      Top = 265
+      Width = 92
+      Height = 17
+      Caption = #26174#31034#23494#30721
+      TabOrder = 4
+      OnClick = CheckBox1Click
+    end
+  end
+  object Timer1: TTimer
+    Interval = 200
+    OnTimer = Timer1Timer
+    Left = 292
+    Top = 54
+  end
+end

@@ -1,0 +1,5 @@
+inherited FOF_shengchangtuikudanxiugai: TFOF_shengchangtuikudanxiugai
+  Caption = #29983#20135#36864#24211#21333#20462#25913
+  PixelsPerInch = 96
+  TextHeight = 16
+end
