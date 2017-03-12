@@ -1,0 +1,34 @@
+library DepotInfoInfo;
+
+uses
+  SysUtils,
+  Classes,
+  Forms,
+  Windows,
+  Dialogs,
+  U_DepotInfo in 'U_DepotInfo.pas' {F_DepotInfo},
+  UDM in '..\UDM.pas' {FDM: TDataModule};
+
+{$R *.res}
+
+function ShowF_SupplierInfo:Boolean; stdcall;
+begin
+  try
+    F_SupplierInfo := TF_SupplierInfo.Create(nil);
+    F_SupplierInfo.WindowState:=wsMaximized;
+    F_SupplierInfo.Show;
+    Result:=True;
+  finally
+
+  end;
+end;
+
+
+exports
+  ShowF_SupplierInfo;
+
+begin
+
+end.
+
+

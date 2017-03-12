@@ -1,0 +1,56 @@
+object Form1: TForm1
+  Left = 348
+  Top = 158
+  Width = 758
+  Height = 532
+  Caption = #21147#30495#36861#28335#31649#29702#31995#32479
+  Color = clWhite
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -16
+  Font.Name = #23435#20307
+  Font.Style = []
+  OldCreateOrder = False
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 16
+  object SpeedButton1: TSpeedButton
+    Left = 279
+    Top = 210
+    Width = 191
+    Height = 102
+    Caption = 'StrToInt  '#36716#20026#25968#23383
+    OnClick = SpeedButton1Click
+  end
+  object LabeledEdit1: TLabeledEdit
+    Left = 87
+    Top = 79
+    Width = 121
+    Height = 24
+    EditLabel.Width = 160
+    EditLabel.Height = 16
+    EditLabel.Caption = #36755#20837#38750#32431#25968#23383#30340#23383#31526#20018
+    TabOrder = 0
+    Text = 'AAA'
+  end
+  object Button1: TButton
+    Left = 72
+    Top = 248
+    Width = 75
+    Height = 25
+    Caption = 'Button1'
+    TabOrder = 1
+  end
+  object CheckBox1: TCheckBox
+    Left = 72
+    Top = 200
+    Width = 97
+    Height = 17
+    Caption = #40657
+    TabOrder = 2
+  end
+  object XPManifest1: TXPManifest
+    Left = 25
+    Top = 39
+  end
+end

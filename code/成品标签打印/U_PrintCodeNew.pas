@@ -1,0 +1,556 @@
+unit U_PrintCodeNew;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, DB, DBClient, StdCtrls, Grids, DBGridEh, RzPanel,
+  RzTabs, frxClass, StrUtils, frxBarcode, psBarcode, ComCtrls;
+
+type
+  TF_PrintCodeNew = class(TForm)
+    Image1: TImage;
+    DataSource1: TDataSource;
+    ClientDataSet1: TClientDataSet;
+    Timer1: TTimer;
+    RzPanel99: TRzPanel;
+    DBGridEh1: TDBGridEh;
+    RzPanel3: TRzPanel;
+    Button1: TButton;
+    ClientDataSet11: TClientDataSet;
+    CheckBox1: TCheckBox;
+    RadioButton1: TRadioButton;
+    RadioButton2: TRadioButton;
+    LabeledEdit1: TLabeledEdit;
+    Button2: TButton;
+    LabeledEdit2: TLabeledEdit;
+    LabeledEdit3: TLabeledEdit;
+    frxReport1: TfrxReport;
+    ClientDataSet12: TClientDataSet;
+    psBarcode1: TpsBarcode;
+    Label1: TLabel;
+    RzPanel1: TRzPanel;
+    Button3: TButton;
+    Button4: TButton;
+    LabeledEdit4: TLabeledEdit;
+    LabeledEdit5: TLabeledEdit;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label2: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    CheckBox2: TCheckBox;
+    Button5: TButton;
+    DateTimePicker1: TDateTimePicker;
+    Label7: TLabel;
+    Label8: TLabel;
+    DateTimePicker2: TDateTimePicker;
+    CheckBox3: TCheckBox;
+    ComboBox1: TComboBox;
+    Label9: TLabel;
+    T_SelectAll: TTimer;
+    procedure Button1Click(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure Button2Click(Sender: TObject);
+    procedure LabeledEdit1Change(Sender: TObject);
+    procedure LabeledEdit2Change(Sender: TObject);
+    procedure LabeledEdit3Change(Sender: TObject);
+    procedure Label3Click(Sender: TObject);
+    procedure Label4Click(Sender: TObject);
+    procedure Label2Click(Sender: TObject);
+    procedure Label5Click(Sender: TObject);
+    procedure Label6Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
+    procedure RadioButton1Click(Sender: TObject);
+    procedure RadioButton2Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
+    procedure Image1DblClick(Sender: TObject);
+    procedure T_SelectAllTimer(Sender: TObject);
+  private
+    procedure CreateParams(var Params: TCreateParams); override;
+    function ChangeDate(bAll: Boolean): Boolean;   
+    function PrintLabel: SmallInt;
+    procedure AddCombobox1;
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+const
+  cReadMe = '新打印标签,功能说明:' +
+    #13 + #10 + '去掉品番的括号.' +
+    #13 + #10 + #13 + #10 + '2014年5月15日 16:15:12 郑少宝';
+
+var
+  F_PrintCodeNew: TF_PrintCodeNew;
+
+implementation
+
+uses ZsbFunPro2, ZsbDLL2, ZsbVariable2;
+
+{$R *.dfm}
+
+procedure TF_PrintCodeNew.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  Params.WndParent := 0; //重载 显示在任务栏
+end;
+
+procedure TF_PrintCodeNew.Button1Click(Sender: TObject);
+var
+  strsql,sqlWhere, temp: string;
+  temp2,temp1:string;
+begin
+  if RadioButton1.Checked then
+  begin
+    temp := '0';
+  end
+  else
+  begin
+    temp := '1';
+  end;
+  temp1:=FormatDateTime('yyyy-mm-dd', DateTimePicker1.Date)+' 00:00:00';
+  temp2:=FormatDateTime('yyyy-mm-dd', DateTimePicker2.Date)+' 23:59:59';
+  strsql := 'select * from EndProtBarCode where alreadyprint=''' + temp + '''';
+
+  sqlWhere := ' and OpeeDT>= ''' + temp1 + ''' and OpeeDT<='''+temp2+'''';
+  if LabeledEdit1.Text <> '' then
+  begin
+    sqlWhere := sqlWhere + ' and ERPPDNO like ''%' + LabeledEdit1.Text + '%''';
+  end;
+  if LabeledEdit2.Text <> '' then
+  begin
+    sqlWhere := sqlWhere + ' and EndProtCode like ''%' + LabeledEdit2.Text + '%''';
+  end;
+  if LabeledEdit3.Text <> '' then
+  begin
+    sqlWhere := sqlWhere + ' and EndProtLot like ''%' + LabeledEdit3.Text + '%''';
+  end;
+  if LabeledEdit5.Text <> '' then
+  begin
+    sqlWhere := sqlWhere + ' and ShippingD like ''%' + LabeledEdit5.Text + '%''';
+  end; 
+  if CheckBox3.Checked then
+  begin
+    sqlWhere := sqlWhere + ' and HandWork=''1''';
+  end
+  else
+  begin
+    sqlWhere := sqlWhere + ' and HandWork=''0''';
+  end;
+  if ComboBox1.ItemIndex>0 then
+  begin   
+    sqlWhere := sqlWhere + ' and uName='''+ComboBox1.Text+'''';
+  end;
+  strsql := strsql + sqlWhere +' order by EndProtLot';
+
+
+  SelectClientDataSet(ClientDataSet1, strsql);
+  SetDBGridEhFooterRowCount(DBGridEh1,ClientDataSet1);
+end;
+
+procedure TF_PrintCodeNew.AddCombobox1;
+var
+  strsql:string;
+begin
+  strsql:= 'select distinct uname from EndProtBarCode where uname<>''''';
+  SelectClientDataSet(ClientDataSet11, strsql);
+  with ClientDataSet11 do
+  begin
+    First;
+    ComboBox1.Items.Clear;
+    ComboBox1.Items.Add('');
+    while not eof do
+    begin
+      ComboBox1.Items.Add(FieldByName('uName').AsString);
+      Next;
+    end;
+  end;
+  ComboBox1.ItemIndex:=ComboBox1.Items.IndexOf(ZStrUser);
+end;
+
+procedure TF_PrintCodeNew.Timer1Timer(Sender: TObject);
+var
+  h: THandle;
+  bit: TBitmap;
+begin
+  Timer1.Enabled := False;
+  if FileExists(ExtractFilePath(Application.Exename) + 'BitBtnImageFormZsbDll2.dll') then
+  begin
+    h := LoadLibrary('BitBtnImageFormZsbDll2.dll'); //载入 DLL
+    bit := TBitmap.Create;
+    bit.LoadFromResourceName(h, 'imgLZtopForZhuiSuSYS2'); //提取资源
+    Image1.Picture.Assign(bit);
+    FreeLibrary(h); //载卸 DLL
+    bit.Free;
+  end;
+  DateTimePicker1.Date := StrToDate(FormatDateTime('yyyy-mm-dd', Now() - 1));
+  DateTimePicker2.Date := StrToDate(FormatDateTime('yyyy-mm-dd', Now));
+  RzPanel99.Visible := True;
+  DBGridEhWidth(DBGridEh1,'get','F_PrintCodeNew_DBGridEh1.zsb');
+  AddCombobox1;
+  Button1.Click;
+end;
+
+procedure TF_PrintCodeNew.FormShow(Sender: TObject);
+begin
+  AnimateWindow(Handle, 200, AW_CENTER); //窗口由小变大
+end;
+
+procedure TF_PrintCodeNew.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  DBGridEhWidth(DBGridEh1,'save','F_PrintCodeNew_DBGridEh1.zsb');
+  Action := caFree;
+end;
+
+procedure TF_PrintCodeNew.Button2Click(Sender: TObject);
+var
+  temp, exsql, pdt: string;
+  iCount: SmallInt;
+begin
+  if ClientDataSet1.RecordCount = 0 then Exit;
+  ClientDataSet11.Data := ClientDataSet1.Data;
+  ClientDataSet11.Filter := 'isselect=''1''';
+  ClientDataSet11.Filtered := True;
+  if ClientDataSet11.RecordCount = 0 then
+  begin
+    zsbSimpleMSNPopUpShow('没有可选择操作的记录.');
+    Exit;
+  end;
+
+  temp := '确认打印所选择的【 ' + inttostr(ClientDataSet11.RecordCount) + ' 】个成品标签么？';
+  if ZsbMsgBoxOkNoApp(Self, temp) = False then Exit;
+  with ClientDataSet11 do
+  begin
+    First;
+    iCount := 0;
+    while not eof do
+    begin
+      if PrintLabel = 1 then
+      begin
+        Break;
+      end;
+      pdt := FormatDateTime('yyyy-MM-dd HH:mm:ss', Now);
+      exsql := 'update EndProtBarCode set alreadyprint=''1'',pdt=''' + pdt +
+        ''',pName=''' + zstruser + ''' where id=''' + ClientDataSet11.FieldByName('id').AsString + '''';
+      EXSQLClientDataSet(ClientDataSet12, exsql);
+      Inc(iCount);
+      Next;
+    end;
+  end;
+
+  if icount <> ClientDataSet11.RecordCount then
+  begin
+    temp := '请注意,实际打印的标签张数与刚才预计生成张数不符.' + #13 + #10;
+    temp := temp + '实际打印【 ' + IntToStr(icount) + ' 】张.' + #13 + #10;
+    temp := temp + '预计打印【 ' + IntToStr(ClientDataSet11.RecordCount) + ' 】张.' + #13 + #10;
+    temp := temp + '请更正操作或者联系管理员.';
+    ZsbMsgErrorInfoNoApp(Self, temp);
+  end
+  else
+  begin
+    zsbSimpleMSNPopUpShow('打印标签【 ' + IntToStr(icount) + ' 】张.');
+    Button1.Click;
+  end;
+end;
+
+function TF_PrintCodeNew.PrintLabel: SmallInt;
+var
+  reportFilePath, pinfang, dc: string;
+  iRt,iNo: SmallInt;
+  bmp: TBitmap;
+begin
+  try
+    iRt := 0;
+   {
+    dc := ClientDataSet11.FieldByName('ERPPDNO').AsString + ',' + ClientDataSet11.FieldByName('EndProtCode').AsString +
+      ',' + ClientDataSet11.FieldByName('EndProtQuat').AsString + ',' + ClientDataSet11.FieldByName('EndProtLot').AsString +
+      ',' + ClientDataSet11.FieldByName('dep').AsString + ',' + ClientDataSet11.FieldByName('shefcode').AsString;
+    }
+    //2014年11月28日 10:51:46 去掉部门与库位
+    dc := ClientDataSet11.FieldByName('ERPPDNO').AsString + ',' + ClientDataSet11.FieldByName('EndProtCode').AsString +
+      ',' + ClientDataSet11.FieldByName('EndProtQuat').AsString + ',' + ClientDataSet11.FieldByName('EndProtLot').AsString;
+
+    dc:=dc+',EndPC'; //最后加一个标识  2014年11月28日 14:45:50
+    psBarcode1.BarCode := dc;
+
+    reportFilePath := ExtractFilePath(ParamStr(0)) + 'frxReport5.fr3';
+    frxReport1.Clear;
+    frxReport1.LoadFromFile(reportFilePath);
+    pinfang := ClientDataSet11.FieldByName('EndProtCode').AsString;
+    pinfang := RightStr(pinfang, Length(pinfang) - 2); //去掉PW   -2014年3月3日 15:21:39
+    iNo:=Pos('(',pinfang);                             //去掉括号 -2014年5月15日 16:12:55
+    if iNo>0 then
+    begin
+      pinfang:=LeftStr(pinfang,iNo-1);
+    end;
+
+    TfrxMemoView(frxReport1.FindObject('Memo1')).Text := ClientDataSet11.FieldByName('CustName').AsString;
+    TfrxMemoView(frxReport1.FindObject('Memo2')).Text := ClientDataSet11.FieldByName('ShippingD').AsString;
+    TfrxMemoView(frxReport1.FindObject('Memo3')).Text := ClientDataSet11.FieldByName('CUSTOMNO').AsString;
+    TfrxMemoView(frxReport1.FindObject('Memo4')).Text := ClientDataSet11.FieldByName('cn').AsString;
+    TfrxMemoView(frxReport1.FindObject('memo5')).Memo.Text := ClientDataSet11.FieldByName('EndProtQuat').AsString + 'PCS';
+    TfrxMemoView(frxReport1.FindObject('memo14')).Memo.Text := pinfang;
+    TfrxMemoView(frxReport1.FindObject('memo15')).Memo.Text := ClientDataSet11.FieldByName('ERPPDNO').AsString;
+    TfrxMemoView(frxReport1.FindObject('memo16')).Memo.Text := ClientDataSet11.FieldByName('EndProtVer').AsString;
+
+    TfrxBarCodeView(frxReport1.FindObject('BarCode1')).Text := pinfang;
+    TfrxBarCodeView(frxReport1.FindObject('BarCode2')).Text := ClientDataSet11.FieldByName('EndProtQuat').AsString;
+    TfrxBarCodeView(frxReport1.FindObject('BarCode3')).Text := ClientDataSet11.FieldByName('ERPPDNO').AsString;
+    TfrxBarCodeView(frxReport1.FindObject('BarCode4')).Text := ClientDataSet11.FieldByName('EndProtVer').AsString;
+
+    bmp := TBitmap.Create;
+    bmp.Width := psBarcode1.Width;
+    bmp.Height := psBarcode1.Height;
+    psBarcode1.PaintBarCode(bmp.Canvas, Rect(0, 0, bmp.Width, bmp.Height));
+    TfrxPictureView(frxReport1.FindObject('picture1')).Picture.Assign(bmp);
+    bmp.Free;
+    if CheckBox2.Checked then
+    begin
+      frxReport1.ShowReport();
+    end
+    else
+    begin
+      frxReport1.PrepareReport;
+      frxReport1.PrintOptions.ShowDialog := False; //不显示打印机选择框
+      frxReport1.Print; //打印
+    end;
+  except
+    on e: Exception do
+    begin
+      ZsbMsgErrorInfoNoApp(Self, e.Message);
+      iRt := 1;
+    end;
+  end;
+  Result := iRt;
+end;
+
+function TF_PrintCodeNew.ChangeDate(bAll: Boolean): Boolean;
+var
+  temp, exsql: string;
+begin
+  if ClientDataSet1.RecordCount = 0 then Exit;
+  if LabeledEdit4.Text = '' then
+  begin
+    zsbSimpleMSNPopUpShow('请输入日期.');
+    LabeledEdit4.SetFocus;
+    Exit;
+  end;
+  if RadioButton2.Checked then
+  begin
+    if ZsbMsgBoxOkNoApp(Self, '当前的已经打印过了，是否继续?') = False then Exit;
+  end;
+
+  temp := '注意：此操作不可撤销，';
+
+  ClientDataSet11.Data := ClientDataSet1.Data;
+  if bAll = False then
+  begin
+    ClientDataSet11.Filter := 'isselect=''1''';
+    ClientDataSet11.Filtered := True;
+    if ClientDataSet11.RecordCount = 0 then
+    begin
+      zsbSimpleMSNPopUpShow('没有可选择操作的记录.');
+      Exit;
+    end;
+    temp := temp + '且当前选择的会被重置掉。';
+  end;
+
+  temp := temp + '是否继续？';
+  if ZsbMsgBoxOkNoApp(Self, temp) = False then Exit;
+
+  with ClientDataSet11 do
+  begin
+    First;
+    exsql := '';
+    if RecordCount > 0 then
+    begin
+      while not Eof do
+      begin
+        if (FieldByName('isselect').AsBoolean = True) or (bAll=True)  then //选择状态
+        begin
+          exsql := exsql + 'update EndProtBarCode set ShippingD=''' + LabeledEdit4.Text + ''' where id=''' + FieldByName('id').AsString + ''';';
+        end;
+        Next;
+      end;
+    end;
+  end;
+
+  if exsql <> '' then
+  begin
+    if EXSQLClientDataSet(ClientDataSet12, exsql) then
+    begin
+      zsbSimpleMSNPopUpShow('操作成功.');
+      Button1.Click;
+    end
+    else
+    begin
+      temp := '操作失败，请联系管理员.';
+      if ClientDataSet11.RecordCount > 100 then
+      begin
+        temp := temp + '当前操作大于100条,请减少操作条数在试试看.';
+      end;
+      ZsbMsgErrorInfoNoApp(Self, temp);
+      SaveMessage(exsql, '.sql');
+    end;
+  end;
+end;
+
+procedure TF_PrintCodeNew.LabeledEdit1Change(Sender: TObject);
+begin
+  Button1.Click;
+end;
+
+procedure TF_PrintCodeNew.LabeledEdit2Change(Sender: TObject);
+begin
+  Button1.Click;
+end;
+
+procedure TF_PrintCodeNew.LabeledEdit3Change(Sender: TObject);
+begin
+  Button1.Click;
+end;
+
+procedure TF_PrintCodeNew.Label3Click(Sender: TObject);
+begin
+  RzPanel1.Visible := True;
+  Label3.Visible := False;
+  Button5.Enabled:=isSuprAdmin;
+end;
+
+procedure TF_PrintCodeNew.Label4Click(Sender: TObject);
+begin
+  RzPanel1.Visible := False;
+  Label3.Visible := True;
+end;
+
+procedure TF_PrintCodeNew.Label2Click(Sender: TObject);
+begin
+  LabeledEdit4.Text := FormatDateTime('yyyyMMdd', Now);
+end;
+
+procedure TF_PrintCodeNew.Label5Click(Sender: TObject);
+begin
+  LabeledEdit4.Text := FormatDateTime('yyyyMMdd', Now() + 1);
+end;
+
+procedure TF_PrintCodeNew.Label6Click(Sender: TObject);
+begin
+  LabeledEdit4.Text := FormatDateTime('yyyyMMdd', Now() + 2);
+end;
+
+procedure TF_PrintCodeNew.Button3Click(Sender: TObject);
+begin
+  ChangeDate(False);
+end;
+
+procedure TF_PrintCodeNew.CheckBox1Click(Sender: TObject);
+begin
+  T_SelectAll.Enabled:=True;
+end;
+
+procedure TF_PrintCodeNew.RadioButton1Click(Sender: TObject);
+begin
+  Button1.Click;
+end;
+
+procedure TF_PrintCodeNew.RadioButton2Click(Sender: TObject);
+begin
+  Button1.Click;
+end;
+
+procedure TF_PrintCodeNew.Button4Click(Sender: TObject);
+begin
+  ChangeDate(True);
+end;
+
+procedure TF_PrintCodeNew.Button5Click(Sender: TObject);
+var
+  temp,exsql:string;
+begin
+  if ClientDataSet1.RecordCount = 0 then Exit;
+  ClientDataSet11.Data:=ClientDataSet1.Data;
+  ClientDataSet11.Filter := 'isselect=''1''';
+  ClientDataSet11.Filtered := True;
+  if ClientDataSet11.RecordCount = 0 then
+  begin
+    zsbSimpleMSNPopUpShow('没有可选择操作的记录.');
+    Exit;
+  end;
+
+  temp := '确认删除所选择的成品标签么？';
+  if ZsbMsgBoxOkNoApp(Self, temp) = False then Exit;
+            
+  exsql := '';
+  with ClientDataSet11 do
+  begin
+    First;
+    if RecordCount > 0 then
+    begin
+      while not Eof do
+      begin
+        if FieldByName('isselect').AsBoolean = True then //选择状态
+        begin
+          exsql := exsql + 'delete from EndProtBarCode  where id=''' + FieldByName('id').AsString + ''';';
+        end;
+        Next;
+      end;
+    end;
+  end;
+
+  if exsql <> '' then
+  begin
+    if EXSQLClientDataSet(ClientDataSet12, exsql) then
+    begin
+      zsbSimpleMSNPopUpShow('操作成功.');
+      Button1.Click;
+    end
+    else
+    begin
+      ZsbMsgErrorInfoNoApp(Self, '操作失败，请联系管理员.');
+      SaveMessage(exsql, '.sql');
+    end;
+  end;
+end;
+
+procedure TF_PrintCodeNew.Image1DblClick(Sender: TObject);
+begin
+  ZsbShowMessageNoApp(Self, cReadMe);
+end;
+
+procedure TF_PrintCodeNew.T_SelectAllTimer(Sender: TObject);
+var
+  temp, LocalID: string;
+begin
+  T_SelectAll.Enabled:=False; 
+  if ClientDataSet1.RecordCount=0 then Exit;
+  if CheckBox1.Checked then
+  begin
+    temp := '1';
+  end
+  else
+  begin
+    temp := '0';
+  end;
+  ClientDataSet11.Data := ClientDataSet1.Data;
+  with ClientDataSet11 do
+  begin
+    LocalID := FieldByName('isselect').AsString;
+    First;
+    while not Eof do
+    begin
+      Edit;
+      FieldByName('isselect').Value := temp;
+      Next;
+    end;
+  end;
+  ClientDataSet11.Locate('ID', LocalID, []);
+  ClientDataSet1.Data := ClientDataSet11.Data;
+end;
+
+end.
+

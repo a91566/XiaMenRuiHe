@@ -1,0 +1,337 @@
+unit U_Print;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, RzPanel, StdCtrls, psBarcode, Grids, DBGridEh, DB,
+  DBClient, frxClass, frxBarcode;
+
+type
+  TF_Print = class(TForm)
+    RzPanel4: TRzPanel;
+    RzPanel3: TRzPanel;
+    RzPanel1: TRzPanel;
+    Label5: TLabel;
+    Label7: TLabel;
+    Panel2: TPanel;
+    Label4: TLabel;
+    Label6: TLabel;
+    Button1: TButton;
+    Button2: TButton;
+    Label3: TLabel;
+    ClientDataSet1: TClientDataSet;
+    DataSource1: TDataSource;
+    Panel1: TPanel;
+    Label1: TLabel;
+    lBB_NO: TLabel;
+    psBarcode1: TpsBarcode;
+    Label8: TLabel;
+    lTotalQTY: TLabel;
+    lTotalCarton: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    DBGridEh1: TDBGridEh;
+    frxReport1: TfrxReport;
+    CheckBox1: TCheckBox;
+    Label11: TLabel;
+    ClientDataSet10: TClientDataSet;
+    Button3: TButton;
+    ClientDataSet11: TClientDataSet;
+    procedure Button1Click(Sender: TObject);
+    procedure Label3MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure RzPanel4MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure FormShow(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+  private
+    procedure CreateParams(var Params: TCreateParams); override;
+    function SaveHistory: Boolean;
+    { Private declarations }
+  public
+    Pu_OutNo, Pu_DT: string;
+    procedure get_BB_NO;
+    function BB_NO_isAlready(strdd,strNo:string):Boolean;
+    { Public declarations }
+  end;
+
+var
+  F_Print: TF_Print;
+
+implementation
+
+uses UDM, ZsbDLL2, ZsbFunPro2, ZsbVariable2, U_frmMain;
+
+{$R *.dfm}
+
+procedure TF_Print.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  Params.WndParent := 0; //重载 显示在任务栏
+end;
+
+function TF_Print.BB_NO_isAlready(strdd,strNo:string):Boolean;
+var
+  strsql: string;
+begin     //验证这个帐版是否还存在
+  strsql := 'select id from EndProtOutDepotZ where state=''Y'' and dt=''' + strdd + ''' and bb_no='''+strNo+'''';
+  SelectClientDataSetNoTips(ClientDataSet11, strsql);
+  if ClientDataSet11.RecordCount > 0 then
+  begin
+    Result:=True;
+  end
+  else
+  begin
+    Result:=False;
+  end;
+end;
+
+procedure TF_Print.get_BB_NO;
+var
+  strsql, iRt: string;
+begin
+  //比如当天帐版号有1，2，3，4四个，其中2被取消了，那这个帐版号还是生成 2
+  iRt:='';
+  strsql := 'select state,bb_no from EndProtOutDepotZ where dt=''' + Pu_DT + ''' order by BB_NO';
+  SelectClientDataSetNoTips(ClientDataSet10, strsql);
+  if ClientDataSet10.RecordCount > 0 then
+  begin
+    with ClientDataSet10 do
+    begin
+      First;
+      while not Eof do
+      begin
+        if FieldByName('state').AsString = 'N' then
+        begin
+          if BB_NO_isAlready(Pu_DT,FieldByName('bb_no').AsString) =False then
+          begin  
+            iRt := FieldByName('bb_no').AsString;
+            Break;
+          end;
+        end;
+        Next;
+      end;
+    end;
+    if iRt='' then
+    begin 
+      iRt := 'NO.' + IntToStr(ClientDataSet10.RecordCount+1);
+    end;
+  end
+  else
+  begin
+    iRt := 'NO.1';
+  end;
+  lBB_NO.Caption := iRt;
+end;
+
+function TF_Print.SaveHistory: Boolean;
+var
+  exsql, temp: string;
+  iNo: SmallInt;
+begin
+  get_BB_NO;
+  exsql := 'update EndProtOutDepotZ set BB_NO=''' + lBB_NO.Caption + ''',dt=''' + Pu_DT + ''' where OutNo=''' + Pu_OutNo + ''';';
+  exsql := exsql + 'insert into BigBarCodeZ(BB_NO,OutNo,dt,pName,pdt,TotalQty,TotalCarton)values(''' + lBB_NO.Caption +
+    ''',''' + Pu_OutNo + ''',''' + Pu_DT + ''',''' + ZStrUser + ''',''' + FormatDateTime('yyyy-mm-dd HH:mm:ss', Now) +
+    ''',''' + lTotalQTY.Caption + ''',''' + lTotalCarton.Caption + ''');';
+
+  for iNo := 1 to ClientDataSet1.RecordCount do
+  begin
+    if ClientDataSet1.FieldByName('PART_NO').AsString = '' then
+    begin
+      Break;
+    end
+    else
+    begin
+      exsql := exsql + 'insert into BigBarCodeMX(BB_NO,iNo,PART_NO,QTY,CARTON,dt)values(''' + lBB_NO.Caption +
+        ''',''' + IntToStr(iNo) + ''',''' + ClientDataSet1.FieldByName('PART_NO').AsString + ''',''' + ClientDataSet1.FieldByName('QTY').AsString +
+        ''',''' + ClientDataSet1.FieldByName('CARTON').AsString + ''',''' + Pu_DT + ''');';
+      ClientDataSet1.Next;
+    end;
+  end;
+
+  Result := EXSQLClientDataSet(ClientDataSet10, exsql);
+end;
+
+procedure TF_Print.Button1Click(Sender: TObject);
+var
+  reportFilePath, n1, n2, n3: string;
+  bmp: TBitmap;
+  i, iPage: SmallInt;
+begin
+  if SaveHistory = False then
+  begin
+    ZsbMsgErrorInfoNoApp(frmMain, '操作失败，请联系管理员。');
+    Exit;
+  end;
+  if (ClientDataSet1.RecordCount > 16) and (ClientDataSet1.RecordCount < 32) then
+  begin
+    iPage := 2;
+    zsbSimpleMSNPopUpShow('标签将会生成两张.');
+  end
+  else
+  begin
+    iPage := 1;
+  end;
+
+  reportFilePath := ExtractFilePath(ParamStr(0)) + 'frxReport6.fr3';
+  frxReport1.Clear;
+  frxReport1.LoadFromFile(reportFilePath);
+
+  TfrxMemoView(frxReport1.FindObject('M_No')).Text := lBB_NO.Caption;
+  if iPage = 2 then
+  begin
+    TfrxMemoView(frxReport1.FindObject('M_PageNo')).Text := '1/2';
+  end
+  else
+  begin //如果有两张，第一张不显示二维码，不显示总数
+    TfrxMemoView(frxReport1.FindObject('M_TotalQTY')).Text := lTotalQTY.Caption;
+    TfrxMemoView(frxReport1.FindObject('M_TotalCarton')).Text := lTotalCarton.Caption;
+
+    bmp := TBitmap.Create;
+    bmp.Width := psBarcode1.Width;
+    bmp.Height := psBarcode1.Height;
+    psBarcode1.PaintBarCode(bmp.Canvas, Rect(0, 0, bmp.Width, bmp.Height));
+    TfrxPictureView(frxReport1.FindObject('picture1')).Picture.Assign(bmp);
+    bmp.Free;
+  end;
+
+  ClientDataSet1.First;
+  for i := 1 to 16 do
+  begin
+    with ClientDataSet1 do
+    begin
+      if FieldByName('PART_NO').AsString = '' then
+      begin
+        Break;
+      end;
+      n1 := 'M' + IntToStr(i) + '1';
+      n2 := 'M' + IntToStr(i) + '2';
+      n3 := 'M' + IntToStr(i) + '3';
+      TfrxMemoView(frxReport1.FindObject(n1)).Text := FieldByName('PART_NO').AsString;
+      TfrxMemoView(frxReport1.FindObject(n2)).Text := FieldByName('QTY').AsString;
+      TfrxMemoView(frxReport1.FindObject(n3)).Text := FieldByName('CARTON').AsString;
+      Next;
+    end;
+  end;
+
+
+  if CheckBox1.Checked then
+  begin
+    frxReport1.ShowReport();
+  end
+  else
+  begin
+    frxReport1.PrepareReport;
+    frxReport1.PrintOptions.ShowDialog := False; //不显示打印机选择框
+    frxReport1.Print; //打印
+  end;
+
+  if iPage = 2 then
+  begin
+    frxReport1.Clear;
+    frxReport1.LoadFromFile(reportFilePath);
+
+    TfrxMemoView(frxReport1.FindObject('M_TotalQTY')).Text := lTotalQTY.Caption;
+    TfrxMemoView(frxReport1.FindObject('M_TotalCarton')).Text := lTotalCarton.Caption;
+    TfrxMemoView(frxReport1.FindObject('M_No')).Text := lBB_NO.Caption;
+    TfrxMemoView(frxReport1.FindObject('M_PageNo')).Text := '2/2';
+    for i := 17 to ClientDataSet1.RecordCount do
+    begin
+      with ClientDataSet1 do
+      begin
+        if FieldByName('PART_NO').AsString = '' then
+        begin
+          Break;
+        end;
+        n1 := 'M' + IntToStr(i - 16) + '1';
+        n2 := 'M' + IntToStr(i - 16) + '2';
+        n3 := 'M' + IntToStr(i - 16) + '3';
+        TfrxMemoView(frxReport1.FindObject(n1)).Text := FieldByName('PART_NO').AsString;
+        TfrxMemoView(frxReport1.FindObject(n2)).Text := FieldByName('QTY').AsString;
+        TfrxMemoView(frxReport1.FindObject(n3)).Text := FieldByName('CARTON').AsString;
+        Next;
+      end;
+    end;
+
+
+    bmp := TBitmap.Create;
+    bmp.Width := psBarcode1.Width;
+    bmp.Height := psBarcode1.Height;
+    psBarcode1.PaintBarCode(bmp.Canvas, Rect(0, 0, bmp.Width, bmp.Height));
+    TfrxPictureView(frxReport1.FindObject('picture1')).Picture.Assign(bmp);
+    bmp.Free;
+
+    if CheckBox1.Checked then
+    begin
+      frxReport1.ShowReport();
+    end
+    else
+    begin
+      frxReport1.PrepareReport;
+      frxReport1.PrintOptions.ShowDialog := False; //不显示打印机选择框
+      frxReport1.Print; //打印
+    end;
+  end;
+
+  frmMain.Button1.Click;
+  Self.Close;
+  zsbSimpleMSNPopUpShow('打印出货大标签' + IntToStr(iPage) + '张.');
+  AddLog_Operation('打印出货大标签' + IntToStr(iPage) + '张.');
+end;
+
+procedure TF_Print.Label3MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if (ssleft in Shift) then
+  begin
+    ReleaseCapture;
+    Perform(WM_syscommand, $F012, 0);
+  end;
+end;
+
+procedure TF_Print.RzPanel4MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if (ssleft in Shift) then
+  begin
+    ReleaseCapture;
+    Perform(WM_syscommand, $F012, 0);
+  end;
+end;
+
+procedure TF_Print.FormShow(Sender: TObject);
+begin
+  DBGridEh1.Columns[0].MaxWidth := 186;
+  DBGridEh1.Columns[0].MinWidth := 186;
+  DBGridEh1.Columns[1].MaxWidth := 117;
+  DBGridEh1.Columns[1].MinWidth := 117;
+  DBGridEh1.Columns[2].MaxWidth := 81;
+  DBGridEh1.Columns[2].MinWidth := 81;
+  psBarcode1.BarCode := Pu_OutNo + ',' + Pu_DT;
+end;
+
+procedure TF_Print.Button2Click(Sender: TObject);
+begin
+  Self.Close;
+end;
+
+procedure TF_Print.Button3Click(Sender: TObject);
+begin
+  if SaveHistory = False then
+  begin
+    ZsbMsgErrorInfoNoApp(frmMain, '操作失败，请联系管理员。');
+    Exit;
+  end
+  else
+  begin
+    zsbSimpleMSNPopUpShow('保存成功.');
+    Self.Close;
+    frmMain.Button3.Click;
+  end;
+end;
+
+end.
+

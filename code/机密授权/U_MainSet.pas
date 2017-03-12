@@ -1,0 +1,203 @@
+unit U_MainSet;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, DBClient, Grids, DBGridEh, StdCtrls, Buttons, Mask,
+  DBCtrlsEh, RzLabel, ExtCtrls, RzPanel, RzTabs, MConnect, SConnect,
+  ComCtrls, RzEdit;
+
+type
+  TfrmMainSet = class(TForm)
+    Timer1: TTimer;
+    Timer2: TTimer;
+    ClientDataSet11: TClientDataSet;
+    RzPanel1: TRzPanel;
+    RzPanel3: TRzPanel;
+    Label52: TLabel;
+    RzEdit1: TRzEdit;
+    RzPanel2: TRzPanel;
+    Label2: TLabel;
+    RzEdit2: TRzEdit;
+    Label1: TLabel;
+    Label3: TLabel;
+    Timer3: TTimer;
+    Label4: TLabel;
+    Timer4: TTimer;
+    RzPanel4: TRzPanel;
+    Label5: TLabel;
+    RzEdit3: TRzEdit;
+    Label6: TLabel;
+    Label7: TLabel;
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
+    procedure RzEdit2KeyPress(Sender: TObject; var Key: Char);
+    procedure Timer3Timer(Sender: TObject);
+    procedure Timer4Timer(Sender: TObject);
+    procedure RzEdit3KeyPress(Sender: TObject; var Key: Char);
+    procedure RzEdit1KeyPress(Sender: TObject; var Key: Char);
+  private
+    procedure CreateParams(var Params: TCreateParams); override;
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMainSet: TfrmMainSet;
+
+implementation
+
+uses UDM, ZsbFunPro2, ZsbDLL2;
+
+{$R *.dfm}
+
+procedure TfrmMainSet.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  Params.WndParent := 0; //重载 显示在任务栏
+end;
+
+procedure TfrmMainSet.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  //AnimateWindow(Self.Handle, 300, AW_CENTER+ AW_HIDE); // 没效果好像2013年3月18日 11:38:05
+  Action := caFree;
+end;
+
+procedure TfrmMainSet.FormCreate(Sender: TObject);
+begin
+  Self.Left := 0;
+  Self.Top := 0;
+  Self.Width := Screen.Width;
+  Self.Height := Screen.Height;
+end;
+
+procedure TfrmMainSet.FormShow(Sender: TObject);
+begin
+  AnimateWindow(Handle, 200, AW_CENTER); //窗口由小变大
+end;
+
+procedure TfrmMainSet.Timer1Timer(Sender: TObject);
+begin
+  Timer1.Enabled := False;
+  try
+    FDM := TFDM.Create(nil);
+    FDM.RestartLink; //创建数据库连接
+    if FDM.booPuLinkDBSta = False then
+    begin
+      if Application.MessageBox(PChar(FDM.strPuLinkError), '错误信息', MB_ICONERROR + MB_RETRYCANCEL) = idRETRY then
+      begin
+        FDM.RestartLink;
+      end
+      else
+      begin
+        Self.Close;
+      end;
+    end;
+    RzPanel1.Visible := True;
+    RzEdit3.SetFocus;
+    Timer3.Enabled := True;
+    Timer4.Enabled := True;
+  finally
+
+  end;
+end;
+
+
+
+{
+  if isSuprAdmin=False then
+  begin
+    zsbSimpleMSNPopUpShow_2('没有操作权限',clRed);
+    SpeedButton4.Enabled:=False;
+    Exit;
+  end;
+  if Application.FindComponent('frmTbM')=nil then
+  begin
+    Application.CreateForm(TfrmTbM,frmTbM);
+  end;
+  frmTbM.Show;
+  }
+
+procedure TfrmMainSet.Timer2Timer(Sender: TObject);
+var
+  exsql, Temp1, Temp2: string;
+begin
+  Timer2.Enabled := False;
+  if RzEdit1.Text = '' then
+  begin
+    RzEdit1.SetFocus;
+    zsbSimpleMSNPopUpShow('Plesae Input ID');
+    Exit;
+  end;
+  if RzEdit2.Text = '' then
+  begin
+    RzEdit2.SetFocus;
+    zsbSimpleMSNPopUpShow('Plesae Input PassWord');
+    Exit;
+  end;
+  Temp1 := Get16MD5ForString(Rzedit1.Text);
+  Temp2 := Get16MD5ForString(Rzedit1.Text);
+  exsql := 'insert into ConfidentialAuthorization(Vv1,Vv2) values(  ''' + Temp2 + ''' ,''' + Temp2 + ''')';
+  if EXSQLClientDataSet(ClientDataSet11, exsql) then
+  begin
+    Self.Close;
+  end
+  else
+  begin
+    zsbSimpleMSNPopUpShow('Set False');
+  end;
+end;
+
+procedure TfrmMainSet.RzEdit2KeyPress(Sender: TObject; var Key: Char);
+begin
+  if Key = #13 then Timer2.Enabled := True;
+end;
+
+procedure TfrmMainSet.Timer3Timer(Sender: TObject);
+begin
+  //label1.Caption:=IntToStr(StrToInt(label1.Caption)-1);
+  //if StrToInt(label1.Caption)<=1 then
+  if (label3.Width <= 0) then
+  begin
+    Self.Close;
+  end;
+end;
+
+procedure TfrmMainSet.Timer4Timer(Sender: TObject);
+begin
+  label3.Width := label3.Width - 1;
+end;
+
+procedure TfrmMainSet.RzEdit3KeyPress(Sender: TObject; var Key: Char);
+begin
+  if key = #13 then
+  begin
+    if RzEdit3.Text = 'ILOVEWANGYATING' then
+    begin
+      RzEdit1.Enabled := True;
+      RzEdit2.Enabled := True;
+      RzEdit1.SetFocus;
+    end
+    else
+    begin
+      zsbSimpleMSNPopUpShow_2('Error',clWhite);
+    end;
+  end;
+end;
+
+procedure TfrmMainSet.RzEdit1KeyPress(Sender: TObject; var Key: Char);
+begin
+  if Key=#13 then
+  begin
+    RzEdit2.SetFocus;
+  end;
+end;
+
+end.
+

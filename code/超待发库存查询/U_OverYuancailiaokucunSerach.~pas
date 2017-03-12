@@ -1,0 +1,234 @@
+unit U_OverYuancailiaokucunSerach;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, DBClient, Grids, DBGridEh, StdCtrls, Buttons, Mask,
+  DBCtrlsEh, RzLabel, ExtCtrls, RzPanel, RzTabs, MConnect, SConnect;
+
+type
+  TF_OverYuancailiaokucunSerach = class(TForm)
+    DataSource1: TDataSource;
+    ClientDataSet1: TClientDataSet;
+    Timer1: TTimer;
+    RzPageControl1: TRzPageControl;
+    TabSheet1: TRzTabSheet;
+    ScrollBox1: TScrollBox;
+    RzPanel99: TRzPanel;
+    DBGridEh1: TDBGridEh;
+    RzPanel1: TRzPanel;
+    SpeedButton999: TSpeedButton;
+    Timer2: TTimer;
+    LabeledEdit1: TLabeledEdit;
+    LabeledEdit2: TLabeledEdit;
+    LabeledEdit3: TLabeledEdit;
+    Image1: TImage;
+    Panel1: TPanel;
+    LabeledEdit4: TLabeledEdit;
+    LabeledEdit5: TLabeledEdit;
+    ClientDataSet10: TClientDataSet;
+    LabeledEdit6: TLabeledEdit;
+    Label1: TLabel;
+    procedure BitBtn1Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure SpeedButton999Click(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
+    procedure DBGridEh1CellClick(Column: TColumnEh);
+    procedure LabeledEdit4Change(Sender: TObject);
+    procedure DBGridEh1ColWidthsChanged(Sender: TObject);
+    procedure Label1Click(Sender: TObject);
+  private  
+    procedure CreateParams(var Params: TCreateParams);override;
+    procedure SetPanelLeft;
+    { Private declarations }
+  public
+    
+    { Public declarations }
+  end;
+
+var
+  F_OverYuancailiaokucunSerach: TF_OverYuancailiaokucunSerach;
+
+implementation
+
+uses UDM, ZsbFunPro2, ZsbDLL2;
+
+{$R *.dfm}
+
+procedure TF_OverYuancailiaokucunSerach.CreateParams(var Params: TCreateParams);
+begin  
+  inherited;  
+  Params.WndParent := 0; //重载 显示在任务栏 
+end;
+
+procedure TF_OverYuancailiaokucunSerach.SetPanelLeft;
+var
+  i,iLeft:SmallInt;
+begin
+  iLeft:=0;
+  for i:=0 to DBGridEh1.Columns.Count -1 do
+  begin
+    iLeft:=iLeft+ DBGridEh1.Columns[i].Width;
+  end;
+  Panel1.Left:=iLeft+40;
+end;
+
+procedure TF_OverYuancailiaokucunSerach.BitBtn1Click(Sender: TObject);
+begin
+  Self.Close;
+end;
+
+procedure TF_OverYuancailiaokucunSerach.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  //AnimateWindow(Self.Handle, 300, AW_CENTER+ AW_HIDE); // 没效果好像2013年3月18日 11:38:05
+  Action := caFree;
+end;
+
+procedure TF_OverYuancailiaokucunSerach.FormCreate(Sender: TObject);
+begin
+  Self.Left := 50;
+  Self.Top := 50;
+end;
+
+procedure TF_OverYuancailiaokucunSerach.FormShow(Sender: TObject);
+begin
+  AnimateWindow(Handle, 200, AW_CENTER); //窗口由小变大  
+end;
+
+procedure TF_OverYuancailiaokucunSerach.SpeedButton999Click(Sender: TObject);
+var
+  temp: string;
+begin
+  temp := 'select MIPDONO,MatlCode,MatlLot,MatlVer,OverQuat from MatlInProeMX where OverQuat>0';
+  if LabeledEdit1.Text<>'' then
+  begin
+    temp := temp + ' and MatlCode like ''%' + LabeledEdit1.Text + '%''';
+  end;
+  if LabeledEdit2.Text<>'' then
+  begin
+    temp := temp + ' and MatlLot like ''%' + LabeledEdit2.Text + '%''';
+  end;     
+ { if LabeledEdit3.Text<>'' then
+  begin
+    temp := temp + ' and MatlInDepotMX.MatlCode in(select MatlCode from Material where SuprCode like ''%' + LabeledEdit3.Text + '%'')';
+  end; }
+  temp:=temp+' order by MatlCode';
+  SelectClientDataSet(ClientDataSet1, temp);
+  LabeledEdit4.Text:='';
+  LabeledEdit5.Text:='';        
+  LabeledEdit6.Text:='';
+  SetPanelLeft;
+end;
+
+procedure TF_OverYuancailiaokucunSerach.Timer1Timer(Sender: TObject);
+var
+  h: THandle;
+  bit: TBitmap;
+begin
+  Timer1.Enabled := False;
+  if FileExists(ExtractFilePath(Application.Exename) + 'BitBtnImageFormZsbDll2.dll') then
+  begin
+    h := LoadLibrary('BitBtnImageFormZsbDll2.dll'); //载入 DLL
+    bit := TBitmap.Create;
+    bit.LoadFromResourceName(h, 'imgLZtopForZhuiSuSYS2'); //提取资源
+    Image1.Picture.Assign(bit);
+    FreeLibrary(h); //载卸 DLL
+    bit.Free;
+  end;
+  RzPageControl1.Visible := True;  
+  RzPageControl1.ActivePageIndex:=0;
+end;
+
+procedure TF_OverYuancailiaokucunSerach.Timer2Timer(Sender: TObject);
+begin
+  Timer2.Enabled := False;
+  try
+    FDM := TFDM.Create(nil);
+    FDM.RestartLink;//创建数据库连接
+    if FDM.booPuLinkDBSta = False then
+    begin
+      if Application.MessageBox(PChar(FDM.strPuLinkError), '错误信息', MB_ICONERROR + MB_RETRYCANCEL) = idRETRY then
+      begin
+        FDM.RestartLink;
+      end
+      else
+      begin
+        Self.Close;
+      end;
+    end;
+    SpeedButton999.Click;
+  finally
+
+  end;
+end;
+
+procedure TF_OverYuancailiaokucunSerach.DBGridEh1CellClick(
+  Column: TColumnEh);
+var
+  strsql,temp:string;
+begin  
+  strsql:='select MatlName from Material where MatlCode='''+ClientDataSet1.FieldByName('MatlCode').AsString+'''';
+  LabeledEdit4.Text:=SelectClientDataSetResultFieldCaption(ClientDataSet10,strsql,'MatlName');
+
+  strsql:='select DeptCode from MatlInProeZ where MIPDONO='''+ClientDataSet1.FieldByName('MIPDONO').AsString+'''';
+  temp:=SelectClientDataSetResultFieldCaption(ClientDataSet10,strsql,'DeptCode');
+  strsql:='select DeptCode+''/''+DeptName Dept from Department where DeptCode='''+temp+'''';
+  LabeledEdit5.Text:=SelectClientDataSetResultFieldCaption(ClientDataSet10,strsql,'Dept');
+
+  strsql:='select ERPPDNO from MatlInProeZ where MIPDONO='''+ClientDataSet1.FieldByName('MIPDONO').AsString+'''';
+  temp:=SelectClientDataSetResultFieldCaption(ClientDataSet10,strsql,'ERPPDNO');
+  strsql:='select DepotCode from ERPProduceDocMX where ERPPDNO='''+temp+''' and MatlCode='''+ClientDataSet1.FieldByName('MatlCode').AsString+'''';
+  temp:=SelectClientDataSetResultFieldCaption(ClientDataSet10,strsql,'DepotCode');
+  strsql:='select DepotCode+''/''+DepotName Depot from Depot where DepotCode='''+temp+'''';
+  LabeledEdit6.Text:=SelectClientDataSetResultFieldCaption(ClientDataSet10,strsql,'Depot');
+end;
+
+procedure TF_OverYuancailiaokucunSerach.LabeledEdit4Change(
+  Sender: TObject);
+begin
+  if LabeledEdit4.Text='' then
+  begin
+     Panel1.Visible:=False;
+  end
+  else
+  begin
+     Panel1.Visible:=True;
+  end;
+end;
+
+procedure TF_OverYuancailiaokucunSerach.DBGridEh1ColWidthsChanged(
+  Sender: TObject);
+begin
+  SetPanelLeft;
+end;
+
+procedure TF_OverYuancailiaokucunSerach.Label1Click(Sender: TObject);
+var
+  exsql:string;
+begin
+  if ZsbMsgBoxOkNoBlackNoApp(Self,'确认收回超待发的材料么?') then
+  begin
+    exsql:='update MatlInDepotMX set StockQuat=StockQuat+'+ClientDataSet1.FieldByName('OverQuat').AsString+' where MatlCode='''+ClientDataSet1.FieldByName('MatlCode').AsString+
+    ''' and MatlLot='''+ClientDataSet1.FieldByName('MatlLot').AsString+''' and MatlVer='''+ClientDataSet1.FieldByName('MatlVer').AsString+''';';  
+    exsql:=exsql+'update MatlInProeMX set OverQuat=OverQuat-'+ClientDataSet1.FieldByName('OverQuat').AsString+' where MatlCode='''+ClientDataSet1.FieldByName('MatlCode').AsString+
+    ''' and MatlLot='''+ClientDataSet1.FieldByName('MatlLot').AsString+''' and MatlVer='''+ClientDataSet1.FieldByName('MatlVer').AsString+
+    ''' and MIPDONO='''+ClientDataSet1.FieldByName('MIPDONO').AsString+''';';
+    if EXSQLClientDataSet(ClientDataSet10, exsql) then
+    begin
+      zsbSimpleMSNPopUpShow('操作成功！');
+      SpeedButton999.Click;
+    end
+    else
+    begin
+      ZsbMsgErrorInfoNoBlackNoApp(Self, '对不起，操作失败！');
+    end;
+  end;
+end;
+
+end.
+

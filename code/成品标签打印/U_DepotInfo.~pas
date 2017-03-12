@@ -1,0 +1,165 @@
+unit U_DepotInfo;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, DBClient, Grids, DBGridEh, StdCtrls, Buttons, Mask,
+  DBCtrlsEh, RzLabel, ExtCtrls, RzPanel, RzTabs, MConnect, SConnect;
+
+type
+  TF_DepotInfo = class(TForm)
+    DataSource1: TDataSource;
+    ClientDataSet1: TClientDataSet;
+    Timer1: TTimer;
+    RzPageControl1: TRzPageControl;
+    TabSheet1: TRzTabSheet;
+    ScrollBox1: TScrollBox;
+    TabSheet2: TRzTabSheet;
+    RzPanel99: TRzPanel;
+    DBGridEh1: TDBGridEh;
+    RzPanel1: TRzPanel;
+    RzLabel_1: TRzLabel;
+    Label990: TLabel;
+    DBComboBoxEh1: TDBComboBoxEh;
+    ComboBox1: TComboBox;
+    SpeedButton999: TSpeedButton;
+    LabeledEdit1: TLabeledEdit;
+    LabeledEdit2: TLabeledEdit;
+    Label1: TLabel;
+    ComboBox2: TComboBox;
+    LabeledEdit3: TLabeledEdit;
+    LabeledEdit4: TLabeledEdit;
+    LabeledEdit5: TLabeledEdit;
+    LabeledEdit6: TLabeledEdit;
+    SpeedButton1: TSpeedButton;
+    SpeedButton2: TSpeedButton;
+    Edit1: TEdit;
+    Timer2: TTimer;
+    SpeedButton3: TSpeedButton;
+    procedure BitBtn1Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure SpeedButton999Click(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    function EXSQLClientDataSet(ClientDataSet1: TClientDataSet; EXSQL: string): Boolean;
+    function SelectClientDataSetResultCount(ClientDataSet1: TClientDataSet; strSQL: string): Integer;
+    procedure SelectClientDataSet(ClientDataSet1: TClientDataSet; strSQL: string);
+    
+    { Public declarations }
+  end;
+
+var
+  F_DepotInfo: TF_DepotInfo;
+
+implementation
+
+uses UDM;
+
+{$R *.dfm}
+
+procedure TF_DepotInfo.BitBtn1Click(Sender: TObject);
+begin
+  Self.Close;
+end;
+
+procedure TF_DepotInfo.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  //AnimateWindow(Self.Handle, 300, AW_CENTER+ AW_HIDE); // 没效果好像2013年3月18日 11:38:05
+  Action := caFree;
+end;
+
+procedure TF_DepotInfo.FormCreate(Sender: TObject);
+begin
+  Self.Top := 0;
+  Self.Top := 0;
+end;
+
+procedure TF_DepotInfo.FormShow(Sender: TObject);
+begin
+  AnimateWindow(Handle, 500, AW_CENTER); //窗口由小变大   
+end;
+
+procedure TF_DepotInfo.SpeedButton999Click(Sender: TObject);
+begin
+  try
+    SelectClientDataSet(ClientDataSet1,'select * from userinfo');
+  except
+    on e: Exception do
+    begin
+      Application.MessageBox(PChar('abnormal：' + e.Message),'系统发生异常',MB_ICONERROR);
+    end;
+  end;
+end;
+
+function TF_DepotInfo.SelectClientDataSetResultCount(ClientDataSet1: TClientDataSet; strSQL: string): Integer;
+begin
+  with ClientDataSet1 do
+  begin
+    data := RemoteServer.AppServer.fun_getdatasql(strSQL);
+  end;
+  Result := ClientDataSet1.RecordCount;
+end;
+
+procedure TF_DepotInfo.SelectClientDataSet(ClientDataSet1: TClientDataSet; strSQL: string);
+begin
+  with ClientDataSet1 do
+  begin
+    data := RemoteServer.AppServer.fun_getdatasql(strSQL);
+  end;
+end;
+
+function TF_DepotInfo.EXSQLClientDataSet(ClientDataSet1: TClientDataSet; EXSQL: string): Boolean;
+var
+  temp: string;
+begin
+  with ClientDataSet1 do
+  begin
+    temp := RemoteServer.AppServer.fun_peradd(EXSQL);
+  end;
+  if temp = 'false' then //返回的是字符串
+  begin
+    result := False;
+  end
+  else
+  begin
+    result := True;
+  end;
+end;
+
+procedure TF_DepotInfo.Timer1Timer(Sender: TObject);
+begin
+  Timer1.Enabled := False;
+  RzPageControl1.Visible := True;
+end;
+
+procedure TF_DepotInfo.Timer2Timer(Sender: TObject);
+begin
+  Timer2.Enabled := False;
+  try
+    FDM := TFDM.Create(nil);
+    FDM.RestartLink;//创建数据库连接
+    if FDM.booPuLinkDBSta = False then
+    begin
+      if Application.MessageBox(PChar(FDM.strPuLinkError), '错误信息', MB_ICONERROR + MB_RETRYCANCEL) = idRETRY then
+      begin
+        FDM.RestartLink;
+      end
+      else
+      begin
+        Self.Close;
+      end;
+    end;
+  finally
+
+  end;
+end;
+
+end.
+

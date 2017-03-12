@@ -1,0 +1,303 @@
+unit U_main;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, RzTray, ShellAPI, ExtCtrls, Animate, GIFCtrl, RzPanel, StdCtrls,
+  IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient, IdFTP, IdFTPList, IniFiles;
+
+type
+  TForm1 = class(TForm)
+    RzTrayIcon1: TRzTrayIcon;
+    Timer1: TTimer;
+    RzPanel1: TRzPanel;
+    RxGIFAnimator1: TRxGIFAnimator;
+    Label1: TLabel;
+    IdFTP1: TIdFTP;
+    TClose: TTimer;
+    Timer2: TTimer;
+    TTimeOut: TTimer;
+    procedure AddUpdateLog(log: string);
+    procedure Timer1Timer(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure TCloseTimer(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
+    procedure TTimeOutTimer(Sender: TObject);
+  private
+    strLog: string;
+    function GetStringFromIni(FromFile, Section, Ident: WideString): WideString;
+    { Private declarations }
+  public
+    bDownTimeOut, bLinkState: boolean; //超时 ，关闭
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation //ZsbUpdate Start  下载超时
+
+{$R *.dfm}
+
+function GetVersionString(FileName: WideString): WideString; stdcall;
+var
+  VerInfoSize: DWORD;
+  VerInfo: Pointer;
+  VerValueSize: DWORD;
+  Dummy: DWORD;
+  VerValue: PVSFixedFileInfo;
+  strFileName:string;//用于转换格式
+begin
+  Result := '';
+  strFileName:=PWideChar(FileName);
+  VerInfoSize := GetFileVersionInfoSize(PChar(strFileName),Dummy);
+  if VerInfoSize = 0 then Exit;
+  GetMem(VerInfo, VerInfoSize);
+  GetFileVersionInfo(PChar(strFileName), 0, VerInfoSize, VerInfo);
+  VerQueryValue(VerInfo, '\', Pointer(VerValue), VerValueSize);
+  Result := IntToStr(VerValue^.dwFileVersionMS shr 16) + '.' +
+    IntToStr(VerValue^.dwFileVersionMS and $FFFF) + '.' +
+    IntToStr(VerValue^.dwFileVersionLS shr 16) + '.' +
+    IntToStr(VerValue^.dwFileVersionLS and $FFFF);
+  FreeMem(VerInfo);
+end;
+
+procedure WaitTime(MSecs: integer);
+var
+  FirstTickCount, Now: Longint;
+begin
+  FirstTickCount := Windows.GetTickCount();
+  repeat Application.ProcessMessages;
+    Now := Windows.GetTickCount();
+  until (Now - FirstTickCount >= MSecs) or (Now < FirstTickCount);
+end;
+
+type
+  TSoftUpThread = class(TThread) //自动更新的线程
+  protected
+    procedure Execute; override;
+  end;
+
+procedure TSoftUpThread.Execute;
+const
+  //lip = '192.168.3.93';    
+  lip = '192.168.18.18';
+  //lip = '192.168.18.199';
+  iport = 1987;
+  pwd = 'zsb522';
+  un = 'zsb';
+var
+  ToFolderPath, ExeMainPath, temp, CloseHWnd: string;
+  HWndCalculator: HWnd;
+  i: SmallInt;
+  TSList: TStringList;
+  bNext: Boolean;
+begin
+  bNext := True;
+  Form1.RzTrayIcon1.ShowBalloonHint('提示信息', PChar('ftp 连接中...'), bhiinfo, 10);
+
+  Form1.strLog := FormatDateTime('yyyy-mm-dd HH:mm:ss', Now) + ' ZsbUpdateForFtp Start  ';
+  Form1.strLog := Form1.strLog + #13 + #10 + 'ip:' + lip + '.port:' + IntToStr(iport);
+
+  try
+    with Form1.idftp1 do
+    begin
+      Host := lip;
+      Port := iport;
+      Username := un;
+      Password := pwd;
+      Connect;
+    end;
+  except
+    on e: Exception do
+    begin
+      Form1.strLog := Form1.strLog + #13 + #10 + e.Message;
+      Form1.TTimeOut.Enabled:=True;
+      bNext := False;
+    end;
+  end;
+
+ { if Form1.IdFTP1.Connected = False then
+  begin
+    Form1.strLog := Form1.strLog + #13 + #10 + 'ftp 连接失败了.';
+    Form1.RzTrayIcon1.ShowBalloonHint('提示信息', PChar('Ftp连接失败...稍后即将自动退出！'), bhiinfo, 10);
+    Form1.TClose.Enabled := True;
+    bNext := False;
+  end;  }
+  if bNext = True then
+  begin
+    Form1.strLog := Form1.strLog + #13 + #10 + 'ftp 连接成功.';
+    Form1.bLinkState := True;
+
+    Form1.Timer2.Enabled := True; //检测下载超时
+
+    CloseHWnd := Form1.GetStringFromIni(ExtractFilePath(ParamStr(0)) + 'updateconfig.ini', 'SYSTEM', 'CloseHWndCalculator'); //关闭的句柄
+    HWndCalculator := Windows.FindWindow(nil, PChar(CloseHWnd)); //关闭主程序
+    if HWndCalculator <> 0 then
+    begin
+      SendMessage(HWndCalculator, WM_CLOSE, 0, 0);
+    end;
+
+    Form1.RzTrayIcon1.ShowBalloonHint('提示信息', PChar('ftp 连接成功,开始下载...'), bhiinfo, 10);
+
+    SetWindowLong(Application.Handle, GWL_EXSTYLE, WS_EX_TOOLWINDOW); //不在任务栏显示
+
+
+
+  //////////////////  如果更换，更改以下变量即可
+    ToFolderPath := ExtractFilePath(Application.Exename); //目标文件夹
+    ExeMainPath := Form1.GetStringFromIni(ExtractFilePath(ParamStr(0)) + 'updateconfig.ini', 'SYSTEM', 'OpenExeMainPath'); //重新启动的程序
+
+  ////////////////
+
+
+    try
+      TSList := TStringList.Create;
+      Form1.IdFTP1.List(TSList);
+      for i := 0 to Form1.IdFTP1.DirectoryListing.Count - 1 do
+      begin
+        if Form1.IdFTP1.DirectoryListing.Items[i].ItemType = ditFile then //如果是文件
+        begin
+          {Utf8ToAnsi 只能用一次，后面下载再用就异常了}
+          // temp := Utf8ToAnsi(Form1.IdFTP1.DirectoryListing.Items[i].FileName);   //替换已存在的文件 为了不乱码
+          temp := Form1.IdFTP1.DirectoryListing.Items[i].FileName;
+          if temp <> 'ZsbUpdateForFtp.exe' then //不是自身的程序
+          begin
+            Form1.IdFTP1.Get(temp, ToFolderPath + Utf8ToAnsi(temp), True); //替换已存在的文件 为了不乱码
+            Form1.bDownTimeOut := False;
+          end;
+        end;
+      end;
+    except
+      on e:Exception do
+      begin    
+        TSList.Free;
+        temp := '更新文件下载失败,请检查磁盘空间是否足够或者请联系管理员.错误代码:'+e.Message;
+        Application.MessageBox(PChar(temp), '更新错误信息', MB_ICONERROR);
+        Form1.TClose.Enabled := True;
+      end;
+    end;
+    TSList.Free;
+    Form1.TClose.Enabled := True;
+    Form1.RzTrayIcon1.ShowBalloonHint('提示信息', PChar(CloseHWnd + '更新完成，正在重启程序...'), bhiinfo, 10);
+    ShellExecute(Handle, 'open', pchar(ExeMainPath), '-s', nil, SW_SHOWNORMAL);  
+  end;
+end;
+
+function TForm1.GetStringFromIni(FromFile, Section, Ident: WideString): WideString;
+var
+  ReadIniFile: TIniFile;
+begin
+  ReadIniFile := TIniFile.Create(FromFile);
+  Result := ReadIniFile.ReadString(Section, Ident, '');
+  ReadIniFile.Free;
+end;
+
+
+procedure TForm1.AddUpdateLog(log: string);
+var
+  saveedit: TStringList;
+  filename: string;
+begin
+  filename := ExtractFilePath(Application.ExeName) + 'UpdateLog.txt';
+  saveedit := TStringList.Create;
+  saveedit.Text := log;
+  if not FileExists(filename) then
+    saveedit.SaveToFile(filename)
+  else
+  begin
+    saveedit.LoadFromFile(filename);
+    saveedit.Insert(0,log);
+    saveedit.SaveToFile(filename);
+  end;
+  saveedit.Free;
+end;
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+begin
+  Timer1.Enabled := False;
+  WaitTime(100);
+  TSoftUpThread.Create(False); //线程类
+end;
+
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  AnimateWindow(Self.Handle, 300, AW_VER_NEGATIVE or AW_SLIDE + AW_HIDE); // 由下到上 退出
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+var
+  iTemp: SmallInt;
+begin
+  iTemp := Screen.Height - Self.Height;
+  iTemp := iTemp div 2;
+ // iTemp:=iTemp-100;
+  Self.Top := iTemp;
+
+  iTemp := Screen.Width - Self.Width;
+  iTemp := iTemp div 2;
+  Self.Left := iTemp;
+
+  SetWindowLong(Application.Handle, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+  RzTrayIcon1.ShowBalloonHint('提示信息', PChar('正在启动中,请稍后...'), bhiinfo, 10);
+end;
+
+procedure TForm1.FormShow(Sender: TObject);
+begin
+  AnimateWindow(Self.Handle, 300, AW_SLIDE + AW_VER_POSITIVE); //向下
+  bDownTimeOut := True;
+  bLinkState := False;
+end;
+
+procedure TForm1.TCloseTimer(Sender: TObject);
+var
+  temp:string;
+begin
+  TClose.Enabled := False;
+  temp := GetVersionString(Application.ExeName);
+  strLog := strLog + #13 + #10 + FormatDateTime('yyyy-mm-dd HH:mm:ss', Now) + ' ZsbUpdateForFtp('+temp+')  Exit;';
+  strLog := strLog + #13 + #10 + '---------------------------------------------------------';
+  AddUpdateLog(strLog);
+ // Application.Terminate;
+  Self.Close;
+end;
+
+procedure TForm1.Timer2Timer(Sender: TObject);
+var
+  temp: string;
+begin
+  if bDownTimeOut = True then
+  begin
+    temp := '下载超时，是否继续等待? 点否退出.' + #13 + #10 + #13 + #10;
+    temp := temp + '确保ftp服务正常的情况下请检查是否被安全卫士之类的软件拦截了程序。';
+    Form1.strLog := Form1.strLog + #13 + #10 + '下载超时';
+    Timer2.Enabled:=False;
+    if Application.MessageBox(PChar(temp), '下载超时提醒', MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON1) = IDNO then
+    begin
+      TClose.Enabled := True;
+    end;  
+    Timer2.Enabled:=True;
+  end;
+end;
+
+procedure TForm1.TTimeOutTimer(Sender: TObject);
+var
+  temp: string;
+begin
+  TTimeOut.Enabled:=False;
+  if bLinkState = False then
+  begin
+    temp := '连接超时，是否继续等待? 点否退出.' + #13 + #10 + #13 + #10;
+    temp := temp + '确保ftp服务正常的情况下请检查是否被安全卫士之类的软件拦截了程序。';
+    if Application.MessageBox(PChar(temp), '连接超时提醒', MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON1) = IDNO then
+    begin
+      TClose.Enabled := True;
+    end;
+  end;
+end;
+
+end.
+

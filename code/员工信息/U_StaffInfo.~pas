@@ -1,0 +1,414 @@
+unit U_StaffInfo;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, DBClient, Grids, DBGridEh, StdCtrls, Buttons, Mask,
+  DBCtrlsEh, RzLabel, ExtCtrls, RzPanel, RzTabs, MConnect, SConnect;
+
+type
+  TF_StaffInfo = class(TForm)
+    DataSource1: TDataSource;
+    ClientDataSet1: TClientDataSet;
+    Timer1: TTimer;
+    RzPageControl1: TRzPageControl;
+    TabSheet1: TRzTabSheet;
+    ScrollBox1: TScrollBox;
+    TabSheet2: TRzTabSheet;
+    RzPanel99: TRzPanel;
+    DBGridEh1: TDBGridEh;
+    RzPanel1: TRzPanel;
+    RzLabel_1: TRzLabel;
+    DBComboBoxEh1: TDBComboBoxEh;
+    SpeedButton999: TSpeedButton;
+    Edit1: TEdit;
+    Timer2: TTimer;
+    SpeedButton3: TSpeedButton;
+    Image1: TImage;
+    Panel1: TPanel;
+    Panel2: TPanel;
+    Label3: TLabel;
+    RadioButton1: TRadioButton;
+    RadioButton2: TRadioButton;
+    LabeledEdit5: TLabeledEdit;
+    LabeledEdit4: TLabeledEdit;
+    LabeledEdit3: TLabeledEdit;
+    LabeledEdit2: TLabeledEdit;
+    LabeledEdit1: TLabeledEdit;
+    Label2: TLabel;
+    Label1: TLabel;
+    ComboBox3: TComboBox;
+    ComboBox2: TComboBox;
+    Panel3: TPanel;
+    Image2: TImage;
+    Button1: TButton;
+    Button2: TButton;
+    ClientDataSet10: TClientDataSet;
+    SpeedButton1: TSpeedButton;
+    SpeedButton2: TSpeedButton;
+    Label4: TLabel;
+    SpeedButton4: TSpeedButton;
+    LabeledEdit6: TLabeledEdit;
+    Label5: TLabel;
+    procedure BitBtn1Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
+    procedure LabeledEdit3SubLabelClick(Sender: TObject);
+    procedure SpeedButton2Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure SpeedButton1Click(Sender: TObject);
+    procedure SpeedButton999Click(Sender: TObject);
+    procedure SpeedButton4Click(Sender: TObject);
+    procedure LabeledEdit1Change(Sender: TObject);
+  private
+    procedure CreateParams(var Params: TCreateParams); override;
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  F_StaffInfo: TF_StaffInfo;
+
+implementation //ZsbMsgBoxOkNoBlack
+
+uses UDM, U_ChenkDept, ZsbFunPro2, ZsbDLL2, ZsbVariable2;
+
+{$R *.dfm}
+
+procedure TF_StaffInfo.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  Params.WndParent := 0; //重载 显示在任务栏
+end;
+
+procedure TF_StaffInfo.BitBtn1Click(Sender: TObject);
+begin
+  Self.Close;
+end;
+
+procedure TF_StaffInfo.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  //AnimateWindow(Self.Handle, 300, AW_CENTER+ AW_HIDE); // 没效果好像2013年3月18日 11:38:05
+  Action := caFree;
+end;
+
+procedure TF_StaffInfo.FormCreate(Sender: TObject);
+begin
+  Self.Top := 50;
+  Self.Top := 50;
+end;
+
+procedure TF_StaffInfo.FormShow(Sender: TObject);
+begin
+  AnimateWindow(Handle, 250, AW_CENTER); //窗口由小变大
+end;
+
+procedure TF_StaffInfo.Timer1Timer(Sender: TObject);
+var
+  h: THandle;
+  bit, bit2: TBitmap;
+begin
+  Timer1.Enabled := False;
+  if FileExists(ExtractFilePath(Application.Exename) + 'BitBtnImageFormZsbDll2.dll') then
+  begin
+    h := LoadLibrary('BitBtnImageFormZsbDll2.dll'); //载入 DLL
+    bit := TBitmap.Create;
+    bit2 := TBitmap.Create;
+    bit.LoadFromResourceName(h, 'imgLZtopForZhuiSuSYS2'); //提取资源
+    bit2.LoadFromResourceName(h, 'imgSkyBlue'); //提取资源
+    Image1.Picture.Assign(bit);
+    Image2.Picture.Assign(bit2);
+    FreeLibrary(h); //载卸 DLL
+    bit.Free;
+    bit2.Free;
+  end;
+  RzPageControl1.Visible := True;
+  RzPageControl1.ActivePageIndex := 0;
+end;
+
+procedure TF_StaffInfo.Timer2Timer(Sender: TObject);
+begin
+  Timer2.Enabled := False;
+  try
+    FDM := TFDM.Create(nil);
+    FDM.RestartLink; //创建数据库连接
+    if FDM.booPuLinkDBSta = False then
+    begin
+      if Application.MessageBox(PChar(FDM.strPuLinkError), '错误信息', MB_ICONERROR + MB_RETRYCANCEL) = idRETRY then
+      begin
+        FDM.RestartLink;
+      end
+      else
+      begin
+        Self.Close;
+      end;
+    end;
+    SpeedButton999.Click;
+   // if isAdmin then SpeedButton1.Visible := True;
+    SpeedButton1.Visible := isAdmin;
+    SpeedButton4.Visible := isSuprAdmin;
+  finally
+
+  end;
+end;
+
+procedure TF_StaffInfo.LabeledEdit3SubLabelClick(Sender: TObject);
+begin
+  if Application.FindComponent('F_ChenkDept') = nil then
+  begin
+    F_ChenkDept := TF_ChenkDept.Create(nil);
+  end;
+  F_ChenkDept.ShowModal;
+  LabeledEdit3.Text := F_ChenkDept.strPuResult;
+end;
+
+procedure TF_StaffInfo.SpeedButton2Click(Sender: TObject);
+begin
+  if ClientDataSet1.RecordCount = 0 then Exit;
+  if ClientDataSet1.FieldByName('usercode').AsString = 'admin' then
+  begin
+    zsbSimpleMSNPopUpShow('admin帐号无法修改！');
+    Exit;
+  end;
+  if ClientDataSet1.FieldByName('stafcode').AsString = '' then
+  begin
+    zsbSimpleMSNPopUpShow('没有数据！');
+    Exit;
+  end;
+  RzPageControl1.ActivePageIndex := 1;
+  LabeledEdit1.Text := ClientDataSet1.FieldByName('stafcode').AsString;
+  LabeledEdit1.ReadOnly := True;
+  LabeledEdit1.Color := clSkyBlue;
+  LabeledEdit2.Text := ClientDataSet1.FieldByName('stafname').AsString;
+  LabeledEdit3.Text := ClientDataSet1.FieldByName('deptcode').AsString;
+  LabeledEdit4.Text := ClientDataSet1.FieldByName('usercode').AsString;
+  LabeledEdit4.ReadOnly := True;
+  LabeledEdit4.Color := clSkyBlue;
+  ComboBox2.ItemIndex := ComboBox2.Items.IndexOf(ClientDataSet1.FieldByName('stafstate').AsString);
+  ComboBox3.ItemIndex := ComboBox3.Items.IndexOf(ClientDataSet1.FieldByName('usertype').AsString);
+  label4.Visible := True;
+  LabeledEdit5.Enabled := False;
+  RadioButton1.Checked := True;
+  if ClientDataSet1.FieldByName('userstate').AsString = 'N' then
+  begin
+    RadioButton2.Checked := True;
+  end;
+end;
+
+procedure TF_StaffInfo.Button1Click(Sender: TObject);
+var
+  temp, temp1, exsql, mm_md5: string;
+begin
+  if LabeledEdit1.Text = '888' then //特权修改超级管理员帐号
+  begin
+    exsql := 'update staff set ShowErpUser_MO=''' + LabeledEdit6.Text + ''' where stafcode=''888''';
+  end
+  else
+  begin   
+    if LabeledEdit1.Text = '' then
+    begin
+      ShowInfoTips(LabeledEdit1.Handle, '请在这里输入人员编码噢.', 3);
+      LabeledEdit1.SetFocus;
+      Exit;
+    end;
+    if LabeledEdit2.Text = '' then
+    begin
+      ShowInfoTips(LabeledEdit2.Handle, '请在这里输入人员姓名噢.', 3);
+      LabeledEdit2.SetFocus;
+      Exit;
+    end;
+    if LabeledEdit3.Text = '' then
+    begin
+      ShowInfoTips(LabeledEdit3.Handle, '请在这里选择人员所属的部门编码噢.', 3);
+      LabeledEdit3.SetFocus;
+      Exit;
+    end;
+    if LabeledEdit4.Text = '' then
+    begin
+      if LabeledEdit5.Text = '' then
+      begin
+        ShowInfoTips(LabeledEdit5.Handle, '您输入了帐号,请在这里输入帐号密码噢.', 3);
+        LabeledEdit5.SetFocus;
+        Exit;
+      end;
+    end;
+    mm_md5 := Get16MD5ForString(LabeledEdit5.Text);
+    temp1 := 'N';
+    if RadioButton1.Checked then
+    begin
+      temp1 := 'Y';
+    end;
+    if LabeledEdit1.ReadOnly = True then //修改
+    begin
+    {这里就不需要验证重名了}
+      temp := 'select id from staff where UserCode=''' + LabeledEdit4.Text + ''' and stafcode<>''' + LabeledEdit1.Text + '''';
+      if SelectClientDataSetResultCount(ClientDataSet10, temp) <> 0 then
+      begin
+        ZsbMsgErrorInfoNoApp(Self, '登录帐号已存在,请重新输入');
+        LabeledEdit4.SetFocus;
+        Exit;
+      end
+      else
+      begin
+        exsql := 'update staff set deptcode=''' + LabeledEdit3.Text + ''',Stafname=''' + LabeledEdit2.Text +
+          ''',usertype=''' + ComboBox3.Text + ''',userstate=''' + temp1 + ''',stafstate=''' + ComboBox2.Text +
+          ''',ShowErpUser_MO=''' + LabeledEdit6.Text + ''' where usercode=''' + LabeledEdit4.Text + ''' and stafcode=''' + LabeledEdit1.Text + '''';
+      end;
+    end
+    else
+    begin //增加
+      temp := 'select id from staff where stafcode=''' + LabeledEdit1.Text + '''';
+      if SelectClientDataSetResultCount(ClientDataSet10, temp) <> 0 then
+      begin
+        ZsbMsgErrorInfoNoApp(Self, '人员代号已存在,请重新输入。');
+        LabeledEdit1.SetFocus;
+        Exit;
+      end;
+
+      temp := 'select id from staff where usercode=''' + LabeledEdit4.Text + '''';
+      if SelectClientDataSetResultCount(ClientDataSet10, temp) <> 0 then
+      begin
+        ZsbMsgErrorInfoNoApp(Self, '登录帐号已存在,请重新输入。');
+        LabeledEdit4.SetFocus;
+        Exit;
+      end
+      else
+      begin
+        exsql := 'insert into staff(stafcode,stafname,deptcode,stafstate,usercode,userpwd,usertype,userstate,ShowErpUser_MO)values(''' + LabeledEdit1.Text +
+          ''',''' + LabeledEdit2.Text + ''',''' + LabeledEdit3.Text + ''',''' + ComboBox2.Text + ''',''' + LabeledEdit4.Text +
+          ''',''' + mm_md5 + ''',''' + ComboBox3.Text + ''',''' + temp1 + ''',''' + LabeledEdit6.Text + ''')';
+      end;
+    end;
+  end;
+  if exsql <> '' then
+  begin
+    if EXSQLClientDataSet(ClientDataSet10, exsql) then
+    begin
+      zsbSimpleMSNPopUpShow('操作成功！');
+      SpeedButton999.Click;
+      Button2.Click;
+    end
+    else
+    begin
+      ZsbMsgErrorInfoNoApp(Self, '对不起，操作失败！');
+    end;
+  end;
+end;
+
+procedure TF_StaffInfo.Button2Click(Sender: TObject);
+begin
+  RadioButton1.Checked := True;
+  ComboBox2.ItemIndex := -1;
+  ComboBox3.ItemIndex := -1;
+  LabeledEdit6.Text := '';
+  LabeledEdit5.Text := '';
+  LabeledEdit4.Text := '';
+  LabeledEdit3.Text := '';
+  LabeledEdit2.Text := '';
+  LabeledEdit1.Text := '';
+  LabeledEdit1.SetFocus;
+  LabeledEdit1.ReadOnly := False;
+  LabeledEdit4.ReadOnly := False;
+  LabeledEdit1.Color := clWhite;
+  LabeledEdit4.Color := clWhite;
+  label4.Visible := False;
+  LabeledEdit5.Enabled := True;
+end;
+
+procedure TF_StaffInfo.SpeedButton1Click(Sender: TObject);
+var
+  tempmm_md5, tempUserCode, tempStafCode, exsql: string;
+begin
+  tempUserCode := ClientDataSet1.FieldByName('usercode').AsString;
+  if tempUserCode = 'admin' then
+  begin
+    zsbSimpleMSNPopUpShow('admin帐号无法修改！');
+    Exit;
+  end;
+  tempStafCode := ClientDataSet1.FieldByName('stafcode').AsString;
+  if tempStafCode = '' then
+  begin
+    zsbSimpleMSNPopUpShow('没有数据！');
+    Exit;
+  end;
+  tempmm_md5 := Get16MD5ForString('123456');
+  //if ZsbMsgBoxOkNoBlack(Application,Self,'确认重置人员编号为['+tempStafCode+']的帐号['+tempUserCode+']的密码么？') then
+  if ZsbMsgBoxOkNoApp(Self, '确认重置人员编号为[' + tempStafCode + ']的帐号[' + tempUserCode + ']的密码么？') then
+  begin
+    exsql := 'update staff set UserPWD=''' + tempmm_md5 + ''' where usercode=''' + tempUserCode + ''' and stafcode=''' + tempStafCode + '''';
+    if EXSQLClientDataSet(ClientDataSet10, exsql) then
+    begin
+      zsbSimpleMSNPopUpShow('密码重置为123456！');
+      SpeedButton999.Click;
+    end
+    else
+    begin
+      ZsbMsgErrorInfoNoApp(Self, '对不起，操作失败！');
+    end;
+  end;
+end;
+
+procedure TF_StaffInfo.SpeedButton999Click(Sender: TObject);
+var
+  temp: string;
+begin
+  temp := 'select * from staff where 1=1 ';
+  if DBComboBoxEh1.ItemIndex >= 0 then
+  begin
+    temp := temp + 'and ' + DBComboBoxEh1.KeyItems.Strings[DBComboBoxEh1.itemindex] + ' like ''%' + trim(Edit1.Text) + '%''';
+  end;
+  temp := temp + ' order by stafcode';
+  SelectClientDataSet(ClientDataSet1, temp);
+end;
+
+procedure TF_StaffInfo.SpeedButton4Click(Sender: TObject);
+var
+  tempmm_md5, tempUserCode, tempStafCode, exsql: string;
+begin
+  tempUserCode := ClientDataSet1.FieldByName('usercode').AsString;
+  if tempUserCode = 'admin' then
+  begin
+    zsbSimpleMSNPopUpShow('admin帐号无法修改！');
+    Exit;
+  end;
+  tempStafCode := ClientDataSet1.FieldByName('stafname').AsString;
+  if tempStafCode = '' then
+  begin
+    zsbSimpleMSNPopUpShow('没有数据！');
+    Exit;
+  end;
+  tempmm_md5 := Get16MD5ForString('123456');
+  if ZsbMsgBoxOkNoApp(Self, '确认删除人员[' + tempStafCode + '/' + tempUserCode + ']的帐号么？') then
+  begin
+    exsql := 'delete staff where usercode=''' + tempUserCode + ''' and stafname=''' + tempStafCode + '''';
+    if EXSQLClientDataSet(ClientDataSet10, exsql) then
+    begin
+      zsbSimpleMSNPopUpShow('已成功删除.');
+      SpeedButton999.Click;
+    end
+    else
+    begin
+      ZsbMsgErrorInfoNoApp(Self, '对不起，操作失败,请联系管理员！');
+    end;
+  end;
+end;
+
+procedure TF_StaffInfo.LabeledEdit1Change(Sender: TObject);
+begin
+  if LabeledEdit1.Text = 'admin' then
+  begin
+    zsbSimpleMSNPopUpShow('admin帐号无法添加！');
+    LabeledEdit1.Text := '';
+    Exit;
+  end;
+end;
+
+end.
+

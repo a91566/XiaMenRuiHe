@@ -1,0 +1,659 @@
+unit U_SelectPrintInfo;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, DB, DBClient, Grids, DBGridEh, RzTabs, StdCtrls,
+  ComCtrls, Menus;
+
+type
+  TF_SelectPrintInfo = class(TForm)
+    Panel2: TPanel;
+    Image1: TImage;
+    Panel1: TPanel;
+    Panel3: TPanel;
+    Image2: TImage;
+    Button1: TButton;
+    Button2: TButton;
+    ClientDataSet1_OtherDB: TClientDataSet;
+    DataSource1: TDataSource;
+    Timer1: TTimer;
+    Panel4: TPanel;
+    Label1: TLabel;
+    DateTimePicker1: TDateTimePicker;
+    Label2: TLabel;
+    DateTimePicker2: TDateTimePicker;
+    Button3: TButton;
+    LabeledEdit1: TLabeledEdit;
+    CheckBox1: TCheckBox;
+    Panel5: TPanel;
+    DBGridEh2: TDBGridEh;
+    DBGridEh1: TDBGridEh;
+    ClientDataSet2_OtherDB: TClientDataSet;
+    DataSource2: TDataSource;
+    ClientDataSet10_OtherDB: TClientDataSet;
+    ClientDataSet3_OtherDB: TClientDataSet;
+    DataSource3: TDataSource;
+    RadioButton1: TRadioButton;
+    RadioButton2: TRadioButton;
+    Label3: TLabel;
+    ClientDataSet11: TClientDataSet;
+    Label4: TLabel;
+    Timer2: TTimer;
+    Button4: TButton;
+    PopupMenu1: TPopupMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    ComboBox1: TComboBox;
+    Label5: TLabel;
+    procedure Timer1Timer(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
+    procedure DBGridEh1CellClick(Column: TColumnEh);
+    procedure Button3Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure Label4MouseLeave(Sender: TObject);
+    procedure Label4MouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure Label4Click(Sender: TObject);
+    procedure LabeledEdit1KeyPress(Sender: TObject; var Key: Char);
+    procedure Timer2Timer(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure N2Click(Sender: TObject);
+  private
+    strTempTbaleName: string; //创建的临时表名称 重新查询时需要删除
+    procedure CreateParams(var Params: TCreateParams); override;
+    procedure DropTable;
+    procedure SaveOrLoadZDR(iType: SmallInt);
+    function isChinaProduct(strPW: string): Boolean;
+    function isAlreadyPrint(str_ML_NO: string): Boolean;
+    { Private declarations }
+  public
+    strPuResult1, strPuResult2, strPuResult3, strPuResult4, strPuResult5, strPuResult6: string;
+    iPuPrintCount, iPuQTY: Integer;
+    procedure SelectShow;
+    { Public declarations }
+  end;
+
+var
+  F_SelectPrintInfo: TF_SelectPrintInfo;
+
+implementation
+
+uses ZsbFunPro2, TThreadSelectClienDataSet, ZsbDLL2, ZsbVariable2,
+  U_PrintBarcode; //ClientDataSet1_OtherDB   FSelectPrintInfo.DefaultZDR.zsb
+
+{$R *.dfm}
+
+procedure TF_SelectPrintInfo.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  Params.WndParent := 0; //重载 显示在任务栏
+end;
+
+procedure TF_SelectPrintInfo.SaveOrLoadZDR(iType: SmallInt);
+var //保留查询条件
+  filename, strsql, temp: string;
+  TSList: TStringList;
+  i, j: SmallInt;
+begin
+  filename := ExtractFilePath(Application.ExeName) + 'FSelectPrintInfo.DefaultZDR.zsb';
+  TSList := TStringList.Create;
+  if iType = 0 then //save
+  begin
+    TSList.Add('F_SelectPrintInfo');
+    TSList.Add(FormatDateTime('yyyy-MM-dd', DateTimePicker1.Date));
+    TSList.Add(FormatDateTime('yyyy-MM-dd', DateTimePicker2.Date));
+    TSList.SaveToFile(filename);
+  end
+  else if iType = 1 then
+  begin
+    if FileExists(filename) then
+    begin
+      TSList.LoadFromFile(filename);
+      if TSList.Count > 2 then
+      begin
+        DateTimePicker1.Date := StrToDate(TSList[1]);
+        DateTimePicker2.Date := StrToDate(TSList[2]);
+      end;
+    end;
+    TSList.Clear;
+    ComboBox1.Items.Clear;
+
+    if isSuprAdmin then
+    begin
+      strsql := 'select ShowErpUser_MO from staff where ShowErpUser_MO<>''''';
+      SelectClientDataSet(ClientDataSet11, strsql);
+      with ClientDataSet11 do
+      begin
+        First;
+        while not Eof do
+        begin
+          temp := FieldByName('ShowErpUser_MO').AsString;
+          if Pos(',', temp) > 0 then
+          begin
+            TSList := SplitString(temp, ',');
+            for i := 0 to TSList.Count - 1 do
+            begin
+              ComboBox1.Items.Add(TSList[i]);
+            end;
+          end
+          else
+          begin
+            ComboBox1.Items.Add(temp);
+          end;
+          Next;
+        end;
+      end;
+    end
+    else
+    begin
+      strsql := 'select ShowErpUser_MO from staff where usercode=''' + ZStrUserCode + '''';
+      temp := SelectClientDataSetResultFieldCaption(ClientDataSet11, strsql, 'ShowErpUser_MO');
+      TSList := SplitString(temp, ',');
+      for i := 0 to TSList.Count - 1 do
+      begin
+        ComboBox1.Items.Add(TSList[i]);
+      end;
+    end;
+    ComboBox1.ItemIndex := 0;
+  end;
+  TSList.Free;
+  for i := 0 to ComboBox1.Items.Count - 1 do
+  begin
+    for j := i + 1 to ComboBox1.Items.Count - 1 do
+    begin
+      if ComboBox1.Items.Strings[j]=ComboBox1.Items.Strings[i] then
+      begin
+        ComboBox1.Items.Delete(j);
+      end;
+    end;
+  end;
+end;
+
+
+procedure TF_SelectPrintInfo.DropTable;
+var
+  exsql: string;
+begin
+  exsql := 'delete from ZT_Print;';
+  EXSQLClientDataSet(ClientDataSet11, exsql);
+end;
+
+procedure TF_SelectPrintInfo.Timer1Timer(Sender: TObject);
+var
+  h: THandle;
+  bit, bit2: TBitmap;
+begin
+  Timer1.Enabled := False;
+  if FileExists(ExtractFilePath(Application.Exename) + 'BitBtnImageFormZsbDll2.dll') then
+  begin
+    h := LoadLibrary('BitBtnImageFormZsbDll2.dll'); //载入 DLL
+    bit := TBitmap.Create;
+    bit2 := TBitmap.Create;
+    bit.LoadFromResourceName(h, 'imgLZLeft'); //提取资源
+    bit2.LoadFromResourceName(h, 'imgSkyBlue'); //提取资源
+    Image1.Picture.Assign(bit);
+    Image2.Picture.Assign(bit2);
+    FreeLibrary(h); //载卸 DLL
+    bit.Free;
+    bit2.Free;
+  end;
+  Panel2.Visible := True;
+
+  DateTimePicker1.Date := StrToDate(FormatDateTime('yyyy-mm-dd', Now() - 1));
+  DateTimePicker2.Date := StrToDate(FormatDateTime('yyyy-mm-dd', Now));
+  SaveOrLoadZDR(1);
+  DBGridEhWidth(DBGridEh1, 'get', 'F_SelectPrintInfo_DBGridEh1.zsb');
+  DBGridEhWidth(DBGridEh2, 'get', 'F_SelectPrintInfo_DBGridEh2.zsb');
+  Button4.Click;
+end;
+
+procedure TF_SelectPrintInfo.FormShow(Sender: TObject);
+begin
+  AnimateWindow(Handle, 200, AW_CENTER); //窗口由小变大
+end;
+
+procedure TF_SelectPrintInfo.Button2Click(Sender: TObject);
+begin
+  strPuResult1 := '';
+  strPuResult2 := '';
+  Self.Close;
+end;
+
+function TF_SelectPrintInfo.isChinaProduct(strPW: string): Boolean;
+var
+  strsql: string;
+  bRt: Boolean;
+begin
+  bRt := False;
+  if strPW <> '' then
+  begin
+    strsql := 'select id from Lz_Zsb_China_Product where pw=''' + strPW + '''';
+    with ClientDataSet10_OtherDB do
+    begin
+      data := RemoteServer.AppServer.HISFUN_GetDataSql(strsql);
+    end;
+    if ClientDataSet10_OtherDB.RecordCount > 0 then
+    begin
+      bRt := True;
+    end;
+  end;
+  Result := bRt;
+end;
+
+function TF_SelectPrintInfo.isAlreadyPrint(str_ML_NO: string): Boolean;
+var
+  strsql, temp: string;
+  bRt: Boolean;
+begin
+  bRt := True;
+  if str_ML_NO <> '' then
+  begin
+    strsql := 'select count(id) id from EndProtBarCode where ML_NO=''' + str_ML_NO + '''';
+    temp := SelectClientDataSetResultFieldCaption(ClientDataSet11, strsql, 'id');
+    if temp = '0' then
+    begin
+      bRt := False;
+    end;
+  end;
+  Result := bRt;
+end;
+
+procedure TF_SelectPrintInfo.Button1Click(Sender: TObject);
+var
+  exsql, temp: string;
+begin
+  if ClientDataSet3_OtherDB.RecordCount = 0 then exit;
+  DBGridEh1CellClick(DBGridEh1.Columns[0]);
+  if ClientDataSet2_OtherDB.Data = null then exit;
+  if ClientDataSet2_OtherDB.RecordCount = 0 then exit;
+
+  if RadioButton2.Checked then
+  begin
+    zsbSimpleMSNPopUpShow('已打印不允许再次打印.');
+    Exit;
+  end;
+
+  //2015年1月6日 11:17:45 出现过选择的人与打印的不符
+  if ClientDataSet3_OtherDB.fieldbyname('CHK_MAN').AsString<>combobox1.Text then
+  begin
+    zsbSimpleMSNPopUpShow('制单人不一样,请重新选择.');
+    Exit;
+  end;
+
+  strPuResult1 := ClientDataSet2_OtherDB.fieldbyname('MRP_NO').AsString;
+  if isChinaProduct(strPuResult1) then
+  begin
+    zsbSimpleMSNPopUpShow('国内品番,暂不支持打印.');
+    exsql := 'insert into MF_ML_NO_SHOW(ML_NO,DT,CZY,isChinaProduct) values (''' + ClientDataSet3_OtherDB.fieldbyname('ML_NO').AsString
+      + ''',''' + FormatDateTime('yyyy-MM-dd HH:mm:ss', Now) + ''',''' + ZStrUser + ''',''1'')';
+    EXSQLClientDataSet(ClientDataSet11, exsql);
+    Exit;
+  end;
+
+  strPuResult6 := ClientDataSet3_OtherDB.fieldbyname('ML_NO').AsString;
+  if isAlreadyPrint(strPuResult6) then
+  begin
+    zsbSimpleMSNPopUpShow('生产领料' + strPuResult6 + '单已经打印,请刷新页面.');
+    Exit;
+  end;
+  strPuResult2 := ClientDataSet2_OtherDB.fieldbyname('MO_NO').AsString;
+  strPuResult3 := ClientDataSet3_OtherDB.fieldbyname('DEP').AsString;
+  strPuResult4 := ClientDataSet2_OtherDB.fieldbyname('WH').AsString;
+  iPuPrintCount := ClientDataSet3_OtherDB.fieldbyname('FJ_NUM').AsInteger;
+  iPuQTY := ClientDataSet2_OtherDB.fieldbyname('QTY').AsInteger;
+  strPuResult5 := ClientDataSet3_OtherDB.fieldbyname('BQ').AsString;
+  SaveOrLoadZDR(0); //保存默认的制单人
+  temp := '【选择打印成品标签】制令单号：' + strPuResult2 + ',制令单总数：' + IntToStr(iPuQTY);
+  temp := temp + ',生产领料单号:' + strPuResult6;
+  temp := temp + ',附件张数(打印张数):' + IntToStr(iPuPrintCount);
+  temp := temp + ',领料部门:' + strPuResult3;
+  temp := temp + ',库位:' + strPuResult4;      
+  temp := temp + ',品番:' + strPuResult1;
+  temp := temp + ',领料日期:' + strPuResult5;
+  temp := temp + ',制单人:' + ClientDataSet3_OtherDB.fieldbyname('CHK_MAN').AsString;
+  AddLog_Operation(temp);
+  Self.Close;
+end;
+
+procedure TF_SelectPrintInfo.CheckBox1Click(Sender: TObject);
+begin
+  Button3.Click;
+end;
+
+procedure TF_SelectPrintInfo.DBGridEh1CellClick(Column: TColumnEh);
+var
+  strsql, strMO_NO, strOtherDB: string;
+begin
+  try
+    if ClientDataSet3_OtherDB.Data = null then exit;
+    if ClientDataSet3_OtherDB.RecordCount = 0 then exit;
+    strOtherDB := GetStringFromIni(ExtractFilePath(Application.Exename) + 'config.ini', 'config', 'OtherDBName');
+    strsql := 'select MO_NO from ' + strOtherDB + '.dbo.TF_ML where ML_NO=''' + ClientDataSet3_OtherDB.fieldbyname('ML_NO').AsString + '''';
+    with ClientDataSet10_OtherDB do //重新连接连接其他数据库
+    begin
+      RemoteServer.AppServer.LinkHISData('1');
+    end;
+    with ClientDataSet10_OtherDB do
+    begin
+      data := RemoteServer.AppServer.HISFUN_GetDataSql(strsql);
+    end;
+    strMO_NO := ClientDataSet10_OtherDB.fieldbyname('MO_NO').AsString;
+
+    strsql := 'select MO_NO,MRP_NO,WH,QTY from MF_MO where MO_NO=''' + strMO_NO + '''';
+    with ClientDataSet2_OtherDB do
+    begin
+      data := RemoteServer.AppServer.HISFUN_GetDataSql(strsql);
+    end;
+  except
+    on e: Exception do
+    begin
+      ShowMessage(e.Message);
+    end;
+  end;
+end;
+
+procedure TF_SelectPrintInfo.Button3Click(Sender: TObject);
+var
+  strsql: string;
+  strOtherDB: string;
+begin
+  Button3.Caption := '处理中...';
+  Button3.Enabled := False;
+  Button1.Enabled := False;
+  WaitTime(10);
+  DropTable;
+  ClientDataSet2_OtherDB.Close;
+  if ClientDataSet1_OtherDB.Tag = 0 then
+  begin
+    with ClientDataSet1_OtherDB do //连接其他数据库
+    begin
+      RemoteServer.AppServer.LinkHISData('1');
+      ClientDataSet1_OtherDB.Tag := 1;
+    end;
+    with ClientDataSet2_OtherDB do //连接其他数据库
+    begin
+      RemoteServer.AppServer.LinkHISData('1');
+    end;
+    with ClientDataSet3_OtherDB do //连接其他数据库
+    begin
+      RemoteServer.AppServer.LinkHISData('1');
+    end;
+    with ClientDataSet10_OtherDB do //连接其他数据库
+    begin
+      RemoteServer.AppServer.LinkHISData('1');
+    end;
+  end;
+
+  strTempTbaleName := 'ZT_' + FormatDateTime('yyyyMMddHHmmss', now); ;
+  strOtherDB := GetStringFromIni(ExtractFilePath(Application.Exename) + 'config.ini', 'config', 'OtherDBName');
+  //strsql := 'select MF_ML.ML_DD,MF_ML.DEP,MF_ML.ML_NO,MF_ML.CHK_MAN,MF_ML.FJ_NUM,MF_ML_Z.BQ'; //   CHK_MAN
+  strsql := 'select MF_ML.ML_DD,MF_ML.DEP,MF_ML.ML_NO,MF_ML.USR,MF_ML.FJ_NUM,MF_ML_Z.BQ'; //抓审核的改成抓录制人员
+  strsql := strsql + ' into RuiHe.dbo.' + strTempTbaleName;
+  strsql := strsql + ' from ' + strOtherDB + '.dbo.MF_ML,' + strOtherDB + '.dbo.MF_ML_Z';
+  strsql := strsql + ' where MF_ML.ML_DD>=''' + FormatDateTime('yyyy-mm-dd', DateTimePicker1.Date) +
+    ''' and MF_ML.ML_DD<=''' + FormatDateTime('yyyy-mm-dd', DateTimePicker2.Date) +
+    ''' and MF_ML.fj_num>0 and MF_ML.ML_NO=MF_ML_Z.ML_NO';
+  if LabeledEdit1.Text <> '' then
+  begin
+    strsql := strsql + ' and MF_ML.ML_NO in (select ML_NO from TF_ML where MO_NO in' +
+      '(select MO_NO from MF_MO where MRP_NO like ''%' + LabeledEdit1.Text + '%''))';
+  end;
+  strsql := strsql + ' and MF_ML.ML_NO in (select ML_NO from TF_ML where MO_NO in' +
+    '(select MO_NO from MF_MO where MRP_NO not in (select pw from Lz_Zsb_China_Product)))'; //国内品番不显示
+  if CheckBox1.Checked then
+  begin
+    strsql := strsql + ' and MF_ML.USR<>''''';
+  end;
+
+  //SaveMessage(strsql, 'sql');
+
+  Timer2.Enabled := True;
+
+  ThreadSelectClienDataSet.Create(ClientDataSet1_OtherDB, strsql, True); //线程查询 保存临时数据
+
+  {with ClientDataSet1 do
+  begin
+    data := RemoteServer.AppServer.HISFUN_GetDataSql(strsql);
+  end;
+  with ClientDataSet1 do
+  begin
+    temp := RemoteServer.AppServer.HISFUN_peradd(strsql);
+  end;
+  if temp = 'false' then //返回的是字符串
+  begin
+    ZsbMsgErrorInfoNoApp(Self, '对不起，查询失败！');
+    Button3.Caption := '刷新';
+    Button3.Enabled := True;
+  end; }
+end;
+
+procedure TF_SelectPrintInfo.SelectShow;
+var
+  strsql, temp, exsql: string;
+begin
+  WaitTime(200);
+  strsql := 'insert into ZT_Print select * from ' + strTempTbaleName; // 保存到数据库
+  EXSQLClientDataSet(ClientDataSet11, strsql);
+  WaitTime(100);
+
+  //删除表
+  exsql := 'drop table ' + strTempTbaleName + ';';
+  EXSQLClientDataSet(ClientDataSet11, exsql);
+
+  // 真正的查询
+  //ZT_Print 创建这个表是因为睿和Sql server 2000 版本的问题，
+  //select into 自动创建表 不能查询出来   报错信息如下
+  //cannot resolve collation conflict for equal to operation
+  temp := ' not';
+  if RadioButton2.Checked then
+  begin
+    temp := '';
+  end;
+  strsql := 'select * from ZT_Print where ML_NO' + temp + ' in (select distinct ML_NO from EndProtBarCode)';
+  if temp = ' not' then
+  begin
+    strsql := strsql + 'and ML_NO not in (select distinct ML_NO from MF_ML_NO_SHOW)';
+  end;
+  if ComboBox1.ItemIndex <> -1 then
+  begin
+    strsql := strsql + ' and chk_man like ''%' + ComboBox1.Text + '%''';
+  end;
+  SelectClientDataSetNoTips(ClientDataSet3_OtherDB, strsql);
+  WaitTime(100);
+  Button3.Caption := '刷新';
+  Button3.Enabled := True;
+end;
+
+procedure TF_SelectPrintInfo.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  DBGridEhWidth(DBGridEh1, 'save', 'F_SelectPrintInfo_DBGridEh1.zsb');
+  DBGridEhWidth(DBGridEh2, 'save', 'F_SelectPrintInfo_DBGridEh2.zsb');
+  DropTable;
+  Action := caFree;
+end;
+
+procedure TF_SelectPrintInfo.Label4MouseLeave(Sender: TObject);
+begin
+  label4.Color := clMaroon;
+  label4.Font.Style := [];
+end;
+
+procedure TF_SelectPrintInfo.Label4MouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  label4.Color := clRed;
+  label4.Font.Style := [fsBold];
+end;
+
+procedure TF_SelectPrintInfo.Label4Click(Sender: TObject);
+var
+  exsql, temp: string;
+begin
+  if isAdmin = False then
+  begin
+    zsbSimpleMSNPopUpShow('操作受限.');
+    Exit;
+  end;
+  if ClientDataSet3_OtherDB.RecordCount = 0 then exit;
+  temp := '确认作废单号【' + ClientDataSet3_OtherDB.fieldbyname('ML_NO').AsString + '】么?';
+  if ZsbMsgBoxOkNoApp(F_PrintBarcode, temp) = False then Exit;
+  exsql := 'insert into MF_ML_NO_SHOW(ML_NO,DT,CZY) values (''' + ClientDataSet3_OtherDB.fieldbyname('ML_NO').AsString
+    + ''',''' + FormatDateTime('yyyy-MM-dd HH:mm:ss', Now) + ''',''' + ZStrUser + ''')';
+  if EXSQLClientDataSet(ClientDataSet11, exsql) then
+  begin
+    zsbSimpleMSNPopUpShow('操作成功.');
+    Button4.Click;
+  end
+  else
+  begin
+    ZsbMsgErrorInfoNoApp(Self, '操作失败,请联系管理员.');
+    Exit;
+  end;
+end;
+
+procedure TF_SelectPrintInfo.LabeledEdit1KeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if key = #13 then
+  begin
+    Button3.Click;
+  end;
+end;
+
+procedure TF_SelectPrintInfo.Timer2Timer(Sender: TObject);
+var
+  strsql: string;
+begin
+  Timer2.Enabled := False;
+  if strTempTbaleName <> '' then
+  begin
+    strsql := 'select * from sysobjects where id = object_id(''' + strTempTbaleName + ''') and type = ''u''';
+    if SelectClientDataSetResultCount(ClientDataSet11, strsql) = 1 then
+    begin
+      SelectShow;
+    end;
+  end;
+end;
+
+procedure TF_SelectPrintInfo.Button4Click(Sender: TObject);
+var
+  temp, strsql: string;
+begin
+  Button1.Enabled := RadioButton1.Checked;
+  Button4.Caption := '处理中...';
+  Button4.Enabled := False;
+  ClientDataSet2_OtherDB.Close;
+  DropTable;
+  if LabeledEdit1.Text <> '' then
+  begin
+    //strsql := 'Exec ZP_SelectPrint_Has_Product ';
+    strsql := 'Exec ZP_SelectPrint_Has_Product_No_China ';
+  end
+  else
+  begin
+    //strsql := 'Exec ZP_SelectPrint_No_Product ';
+    strsql := 'Exec ZP_SelectPrint_No_Product_NO_China ';
+  end;
+  strsql := strsql + '''' + FormatDateTime('yyyy-mm-dd', DateTimePicker1.Date) + '''';
+  strsql := strsql + ',''' + FormatDateTime('yyyy-mm-dd', DateTimePicker2.Date) + '''';
+  strsql := strsql + ',''' + ComboBox1.Text + '''';
+  if LabeledEdit1.Text <> '' then
+  begin
+    strsql := strsql + ',''' + Labelededit1.Text + '''';
+  end;
+  if EXSQLClientDataSet(ClientDataSet11, strsql) = False then
+  begin
+    ZsbMsgErrorInfoNoApp(Self, '查询失败了,' + strsql);
+    Button4.Caption := '刷新';
+    Button4.Enabled := True;
+    Exit;
+  end;
+
+  temp := ' not';
+  if RadioButton2.Checked then
+  begin
+    temp := '';
+  end;
+  strsql := 'select * from ZT_Print where ML_NO' + temp + ' in (select distinct ML_NO from EndProtBarCode)';
+  if temp = ' not' then
+  begin
+    strsql := strsql + 'and ML_NO not in (select distinct ML_NO from MF_ML_NO_SHOW)';
+  end;
+  SelectClientDataSetNoTips(ClientDataSet3_OtherDB, strsql);
+  WaitTime(100);
+  Button4.Caption := '刷新';
+  Button4.Enabled := True;
+  zsbSimpleMSNPopUpShow('查询成功');
+end;
+
+procedure TF_SelectPrintInfo.N2Click(Sender: TObject);
+var
+  ML_NO, MO_NO, SHOW, strsql, temp: string;
+  iTemp: SmallInt;
+begin
+  if ClientDataSet3_OtherDB.RecordCount = 0 then exit;
+  if ClientDataSet2_OtherDB.Data = null then exit;
+  if ClientDataSet2_OtherDB.RecordCount = 0 then exit;
+
+  ML_NO := ClientDataSet3_OtherDB.fieldbyname('ML_NO').AsString;
+  if ML_NO = '' then exit;
+  MO_NO := ClientDataSet2_OtherDB.fieldbyname('MO_NO').AsString;
+
+  SHOW := #13 + #10 + '生产领料单：' + ML_NO + #13 + #10 + '制令单单号：' + MO_NO + #13 + #10 + '-------------------------------' + #13 + #10 + #13 + #10;
+
+  if isAlreadyPrint(ML_NO) then
+  begin
+    SHOW := SHOW + '该生产领料单已经打印过.' + #13 + #10 + #13 + #10;
+    SHOW := SHOW + '该制令单生产的总数量：' + ClientDataSet2_OtherDB.fieldbyname('QTY').AsString;
+
+    strsql := 'select sum(endprotquat) endprotquat from EndProtBarCode where ERPPDNO=''' + MO_NO + ''' and  state=''Y''';
+    temp := SelectClientDataSetResultFieldCaption(ClientDataSet11, strsql, 'endprotquat');
+    if temp = '' then temp := '0';
+    SHOW := SHOW + '，已经打印数量：' + temp;
+
+    strsql := 'select distinct ML_NO from EndProtBarCode where ERPPDNO=''' + MO_NO + ''' and  state=''Y''';
+    SelectClientDataSetNoTips(ClientDataSet11, strsql);
+    iTemp := 1;
+    if ClientDataSet11.RecordCount > 0 then
+    begin
+      with ClientDataSet11 do
+      begin
+        First;
+        SHOW := SHOW + '，对应的生产领料单包括：';
+        while not Eof do
+        begin
+          if iTemp = 1 then
+          begin
+            SHOW := SHOW + FieldByName('ML_NO').AsString;
+            iTemp := 0;
+          end
+          else
+          begin
+            SHOW := SHOW + ',' + FieldByName('ML_NO').AsString;
+          end;
+          Next;
+        end;
+      end;
+    end;
+  end
+  else
+  begin
+    SHOW := SHOW + '该生产领料单  【还没有】  被打印.' + #13 + #10 + #13 + #10;
+    SHOW := SHOW + '该制令单生产的总数量：' + ClientDataSet2_OtherDB.fieldbyname('QTY').AsString;
+    strsql := 'select sum(endprotquat) endprotquat from EndProtBarCode where ERPPDNO=''' + MO_NO + ''' and  state=''Y''';
+    temp := SelectClientDataSetResultFieldCaption(ClientDataSet11, strsql, 'endprotquat');
+    if temp = '' then temp := '0';
+    SHOW := SHOW + '，已经打印数量：' + temp + #13 + #10 + #13 + #10;
+  end;
+  ZsbShowMessageNoApp(F_PrintBarcode, SHOW);
+end;
+
+end.
+
