@@ -1,0 +1,7 @@
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\ShengChanBuLiao.csShengChanBuLiao.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\生产补料.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\ShengChanBuLiao.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\ShengChanBuLiao.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\ShengChanBuLiao.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\ShengChanBuLiao.dll

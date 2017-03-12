@@ -1,0 +1,10 @@
+E:\aboutWork\其他客户\睿和电子\PDA\code\发料出库\发料出库\发料出库\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\发料出库\发料出库\发料出库\obj\Debug\发料出库.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\发料出库\发料出库\发料出库\bin\Debug\FaLiaoChuKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\发料出库\发料出库\发料出库\bin\Debug\FaLiaoChuKu.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\发料出库\发料出库\发料出库\bin\Debug\System.Data.SqlClient.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\发料出库\发料出库\发料出库\obj\Debug\FaLiaoChuKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\发料出库\发料出库\发料出库\obj\Debug\FaLiaoChuKu.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\发料出库\发料出库\发料出库\obj\Debug\FaLiaoChuKu.csFaLiaoChuKu.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\FaLiaoChuKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\FaLiaoChuKu.pdb

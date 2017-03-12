@@ -1,0 +1,15 @@
+E:\aboutWork\其他客户\睿和电子\PDA\code\后工发料\后工发料\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\后工发料\后工发料\obj\Debug\后工发料.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\后工发料\后工发料\bin\Debug\后工发料.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\后工发料\后工发料\bin\Debug\后工发料.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\后工发料\后工发料\bin\Debug\System.Data.SqlClient.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\后工发料\后工发料\obj\Debug\HouGongFaLiao.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\后工发料\后工发料\obj\Debug\HouGongFaLiao.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\后工发料\后工发料\obj\Debug\HouGongFaLiao.csHouGongFaLiao.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\HouGongFaLiao.csHouGongFaLiao.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\后工发料.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\ShengChanBuLiao.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\ShengChanBuLiao.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\ShengChanBuLiao.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\生产补料\后工发料\obj\Debug\ShengChanBuLiao.pdb

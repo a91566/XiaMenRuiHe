@@ -1,0 +1,11 @@
+E:\aboutWork\其他客户\睿和电子\PDA\code\不良品登记\不良品登记\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\不良品登记\不良品登记\obj\Debug\BuLiangPinDengJi.csBuLiangPinDengJi.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\不良品登记\不良品登记\obj\Debug\BuLiangPinDengJi.Properties.Resources.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\不良品登记\不良品登记\obj\Debug\不良品登记.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\不良品登记\不良品登记\bin\Debug\BuLiangPinDengJi.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\不良品登记\不良品登记\bin\Debug\BuLiangPinDengJi.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\不良品登记\不良品登记\bin\Debug\System.Data.SqlClient.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\不良品登记\不良品登记\obj\Debug\BuLiangPinDengJi.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\不良品登记\不良品登记\obj\Debug\BuLiangPinDengJi.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\BuLiangPinDengJi.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\BuLiangPinDengJi.pdb

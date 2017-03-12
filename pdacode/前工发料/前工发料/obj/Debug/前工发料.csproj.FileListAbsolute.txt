@@ -1,0 +1,7 @@
+E:\aboutWork\其他客户\睿和电子\PDA\code\前工发料\前工发料\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\前工发料\前工发料\obj\Debug\前工发料.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\QianGongFaLiao.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\QianGongFaLiao.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\前工发料\前工发料\obj\Debug\QianGongFaLiao.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\前工发料\前工发料\obj\Debug\QianGongFaLiao.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\前工发料\前工发料\obj\Debug\QianGongFaLiao.Form1.resources

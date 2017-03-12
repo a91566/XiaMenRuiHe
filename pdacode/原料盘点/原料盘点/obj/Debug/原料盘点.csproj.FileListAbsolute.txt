@@ -1,0 +1,19 @@
+C:\Documents and Settings\Administrator\桌面\原料盘点\原料盘点\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\Administrator\桌面\原料盘点\原料盘点\obj\Debug\原料盘点.csproj.GenerateResource.Cache
+C:\Documents and Settings\Administrator\桌面\原料盘点\原料盘点\obj\Debug\YuanLiaoPanDian.Properties.Resources.resources
+C:\Documents and Settings\Administrator\桌面\原料盘点\原料盘点\bin\Debug\YuanLiaoPanDian.dll
+C:\Documents and Settings\Administrator\桌面\原料盘点\原料盘点\bin\Debug\YuanLiaoPanDian.pdb
+C:\Documents and Settings\Administrator\桌面\原料盘点\原料盘点\obj\Debug\YuanLiaoPanDian.dll
+C:\Documents and Settings\Administrator\桌面\原料盘点\原料盘点\obj\Debug\YuanLiaoPanDian.pdb
+C:\Documents and Settings\Administrator\桌面\原料盘点\原料盘点\obj\Debug\YuanLiaoPanDian.csYuanLiaoPanDian.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料盘点\原料盘点\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料盘点\原料盘点\obj\Debug\YuanLiaoPanDian.csYuanLiaoPanDian.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料盘点\原料盘点\obj\Debug\YuanLiaoPanDian.Properties.Resources.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料盘点\原料盘点\obj\Debug\原料盘点.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料盘点\原料盘点\obj\Debug\YuanLiaoPanDian.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料盘点\原料盘点\bin\Debug\YuanLiaoPanDian.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料盘点\原料盘点\bin\Debug\YuanLiaoPanDian.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料盘点\原料盘点\bin\Debug\System.Data.SqlClient.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料盘点\原料盘点\obj\Debug\YuanLiaoPanDian.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\YuanLiaoPanDian.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\YuanLiaoPanDian.pdb

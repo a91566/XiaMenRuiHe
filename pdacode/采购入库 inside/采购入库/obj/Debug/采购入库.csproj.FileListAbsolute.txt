@@ -1,0 +1,22 @@
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\采购入库\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\采购入库\obj\Debug\采购入库.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\采购入库\obj\Debug\CaiGouRuKu.csCaiGouRuKu.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\采购入库\bin\Debug\CaiGouRuKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\采购入库\bin\Debug\CaiGouRuKu.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\采购入库\bin\Debug\System.Data.SqlClient.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\采购入库\obj\Debug\CaiGouRuKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\采购入库\obj\Debug\CaiGouRuKu.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\CaiGouRuKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\CaiGouRuKu.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\obj\Debug\CaiGouRuKu.csCaiGouRuKu.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\obj\Debug\采购入库.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\obj\Debug\CaiGouRuKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库\采购入库\obj\Debug\CaiGouRuKu.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\CaiGouRuKu_inside.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\CaiGouRuKu_inside.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库 inside\采购入库\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库 inside\采购入库\obj\Debug\采购入库.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库 inside\采购入库\obj\Debug\CaiGouRuKu_inside.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库 inside\采购入库\obj\Debug\CaiGouRuKu_inside.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购入库 inside\采购入库\obj\Debug\CaiGouRuKu_inside.csCaiGouRuKu_inside.resources

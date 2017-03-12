@@ -1,0 +1,7 @@
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\YuanLiaoBiaoQianYanZheng.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\YuanLiaoBiaoQianYanZheng.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料标签验证\后工发料\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料标签验证\后工发料\obj\Debug\原料标签验证.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料标签验证\后工发料\obj\Debug\YuanLiaoBiaoQianYanZheng.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料标签验证\后工发料\obj\Debug\YuanLiaoBiaoQianYanZheng.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\原料标签验证\后工发料\obj\Debug\YuanLiaoBiaoQianYanZheng.csYuanLiaoBiaoQianYanZheng.resources

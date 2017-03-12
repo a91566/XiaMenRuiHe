@@ -1,0 +1,10 @@
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购退库\采购退库\obj\Debug\ResolveAssemblyReference.cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购退库\采购退库\obj\Debug\采购退库.csproj.GenerateResource.Cache
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购退库\采购退库\bin\Debug\System.Data.SqlClient.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购退库\采购退库\bin\Debug\CaiGouTuiKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购退库\采购退库\bin\Debug\CaiGouTuiKu.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购退库\采购退库\obj\Debug\CaiGouTuiKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购退库\采购退库\obj\Debug\CaiGouTuiKu.pdb
+E:\aboutWork\其他客户\睿和电子\PDA\code\采购退库\采购退库\obj\Debug\CaiGouTuiKu.csCaiGouTuiKu.resources
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\CaiGouTuiKu.dll
+E:\aboutWork\其他客户\睿和电子\PDA\code\PPDARHPRORETSYS\PPDARHPRORETSYS\bin\Debug\CaiGouTuiKu.pdb
